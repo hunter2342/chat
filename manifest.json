@@ -1,0 +1,16 @@
+{
+  "name": "Chat App Premium",
+  "short_name": "Chat",
+  "description": "تطبيق محادثة فاخر وآمن",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#d97706",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1041/1041916.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
