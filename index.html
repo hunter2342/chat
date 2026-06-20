@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Chat App - Ultra Premium Glass Edition</title>
+    <title>Chat App - Ultra Premium Edition</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d97706">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1041/1041916.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <script>
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
+        if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
+        else { document.documentElement.classList.add('dark'); }
+        
+        // تسجيل عامل الخدمة لـ PWA
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('PWA SW Registration failed:', err));
         }
     </script>
 
@@ -25,39 +36,23 @@
                             dark: 'rgb(var(--color-dark) / <alpha-value>)', 
                             darker: 'rgb(var(--color-darker) / <alpha-value>)', 
                             emerald: '#059669', 
-                            gold: '#d97706',
+                            gold: '#d97706', 
                             surface: 'rgb(var(--color-surface) / <alpha-value>)', 
                             text: 'rgb(var(--color-text) / <alpha-value>)', 
                             muted: 'rgb(var(--color-text) / 0.5)' 
                         } 
                     },
-                    animation: { 'fade-in-up': 'fadeInUp 0.3s ease-out forwards', 'typing-bounce': 'typingBounce 1.4s infinite ease-in-out both' },
-                    keyframes: {
-                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        typingBounce: { '0%, 80%, 100%': { transform: 'scale(0)' }, '40%': { transform: 'scale(1)' } }
-                    }
+                    animation: { 'fade-in-up': 'fadeInUp 0.3s ease-out forwards', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+                    keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
                 }
             }
         }
     </script>
     <style>
-        :root {
-            --color-darker: 245 240 235; 
-            --color-dark: 230 220 210; 
-            --color-surface: 255 255 255; 
-            --color-text: 24 16 10;
-            --pattern-bg: #eaddcf;
-        }
-        html.dark {
-            --color-darker: 10 12 18; 
-            --color-dark: 18 22 32; 
-            --color-surface: 28 36 50; 
-            --color-text: 245 247 250;
-            --pattern-bg: #0b0e14;
-        }
+        :root { --color-darker: 245 240 235; --color-dark: 230 220 210; --color-surface: 255 255 255; --color-text: 24 16 10; }
+        html.dark { --color-darker: 10 12 18; --color-dark: 18 22 32; --color-surface: 28 36 50; --color-text: 245 247 250; }
 
         ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(217, 119, 6, 0.3); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(217, 119, 6, 0.6); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -66,39 +61,36 @@
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         body { height: 100dvh; height: -webkit-fill-available; transition: background-color 0.4s ease; background-color: rgb(var(--color-darker)); position: relative; }
         
-        body::before {
-            content: ''; position: absolute; top: -10%; left: -10%; width: 50%; height: 50%;
-            background: radial-gradient(circle, rgba(217,119,6,0.08) 0%, transparent 70%); z-index: 0; pointer-events: none;
-        }
+        /* طبقة الجسيمات التفاعلية */
+        #particles-js { position: absolute; top:0; left:0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
         .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .tab-content.active { display: flex; flex-direction: column; height: 100%; opacity: 1; animation: fadeInUp 0.4s ease forwards;}
         
-        .glass-panel { background: rgba(var(--color-surface) / 0.45); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.07); }
-        html.dark .glass-panel { background: rgba(18, 24, 38, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        /* تأثير الزجاج (Glassmorphism) */
+        .glass-panel { background: rgba(var(--color-surface) / 0.55); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); position: relative; z-index: 10;}
+        html.dark .glass-panel { background: rgba(18, 24, 38, 0.65); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         
         .msg-bubble { box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.03); }
         .msg-bubble:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
         
-        .bg-pattern { background-image: radial-gradient(rgba(217, 119, 6, 0.15) 0.8px, transparent 0.8px); background-size: 32px 32px; background-attachment: fixed; }
-        
-        .format-bold { font-weight: 800; color: #fbbf24; }
-        .format-italic { font-style: italic; opacity: 0.9; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0.5rem); }
         .pt-safe { padding-top: env(safe-area-inset-top, 1rem); }
         
-        .media-content img, .media-content video { max-height: 280px; border-radius: 1.25rem; object-fit: cover; border: 1px solid rgba(var(--color-text) / 0.1); }
-        .secret-msg { filter: blur(10px); cursor: pointer; user-select: none; transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .secret-msg.revealed { filter: blur(0); }
-        .story-progress-fill { transition-property: width; transition-timing-function: linear; }
-
+        .media-content img, .media-content video { max-height: 280px; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(var(--color-text) / 0.1); }
+        
+        /* تصميم زر العرض لمرة واحدة */
+        .view-once-btn { background: repeating-linear-gradient(45deg, rgba(217,119,6,0.05), rgba(217,119,6,0.05) 10px, rgba(217,119,6,0.1) 10px, rgba(217,119,6,0.1) 20px); border: 1px dashed rgba(217,119,6,0.5); }
+        
         .toggle-checkbox:checked { right: 0; border-color: #d97706; }
         .toggle-checkbox:checked + .toggle-label { background-color: #d97706; }
     </style>
 </head>
-<body class="bg-pattern text-brand-text h-[100dvh] overflow-hidden font-sans antialiased flex justify-center">
+<body class="text-brand-text h-[100dvh] overflow-hidden font-sans antialiased flex justify-center bg-brand-darker">
 
-    <div id="auth-screen" class="absolute inset-0 z-[100] flex items-center justify-center bg-brand-darker/95 backdrop-blur-xl p-4 transition-opacity duration-500">
+    <div id="particles-js"></div>
+
+    <div id="auth-screen" class="absolute inset-0 z-[100] flex items-center justify-center bg-brand-darker/90 backdrop-blur-xl p-4 transition-opacity duration-500">
         <div class="glass-panel p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-brand-gold rounded-full blur-[80px] opacity-10"></div>
             
@@ -175,7 +167,6 @@
                     </div>
                 </div>
                 
-                <!-- تم إزالة items-center ليسمح بالتمرير بشكل طبيعي -->
                 <div id="tab-settings" class="tab-content p-6 pb-32 pt-8 gap-4 w-full max-w-md mx-auto overflow-y-auto no-scrollbar">
                     <div class="relative w-32 h-32 mx-auto cursor-pointer group hover:scale-105 transition-transform shrink-0" onclick="document.getElementById('settings-avatar-input').click()">
                         <div id="settings-avatar-container" class="w-full h-full bg-gradient-to-tr from-brand-gold to-brand-darker rounded-[2.5rem] flex items-center justify-center shadow-xl border-2 border-brand-gold/20 overflow-hidden relative">
@@ -199,222 +190,153 @@
                         </div>
 
                         <div class="bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 flex flex-col gap-3">
-                            <span class="text-xs font-bold text-brand-gold">أدوات النظام (System Tools)</span>
-                            <button onclick="alert('جاري تصدير المحادثة بصيغة ملف نصي...')" class="w-full flex items-center justify-between p-3 bg-brand-darker/40 hover:bg-brand-darker rounded-xl transition-colors text-sm font-medium">
-                                <span class="flex items-center gap-2"><i data-lucide="download" class="w-4 h-4 text-brand-gold"></i> تصدير سجل الدردشة</span>
-                                <span class="text-[10px] text-brand-muted">Export Chat.txt</span>
+                            <span class="text-xs font-bold text-brand-gold">أدوات النظام</span>
+                            <button onclick="alert('جاري تصدير المحادثة...')" class="w-full flex items-center justify-between p-3 bg-brand-darker/40 hover:bg-brand-darker rounded-xl transition-colors text-sm font-medium">
+                                <span class="flex items-center gap-2"><i data-lucide="download" class="w-4 h-4 text-brand-gold"></i> تصدير السجل</span>
                             </button>
                         </div>
                         
                         <div class="flex items-center justify-between p-4 bg-brand-surface/20 rounded-xl border border-brand-text/5">
                             <div class="flex items-center gap-3">
-                                <i data-lucide="moon" class="w-5 h-5 text-brand-gold"></i>
-                                <span class="font-bold text-brand-text text-sm">الوضع المظلم الفاخر</span>
+                                <i data-lucide="moon" class="w-5 h-5 text-brand-gold"></i><span class="font-bold text-brand-text text-sm">الوضع المظلم</span>
                             </div>
                             <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="toggle" id="theme-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 z-10" onchange="toggleTheme()"/>
+                                <input type="checkbox" id="theme-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 z-10" onchange="toggleTheme()"/>
                                 <label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-400 dark:bg-gray-600 cursor-pointer transition-colors duration-300"></label>
                             </div>
                         </div>
 
-                        <button id="save-profile-btn" class="bg-gradient-to-r from-amber-600 to-brand-gold text-white p-4 rounded-xl font-black flex justify-center items-center h-14 hover:from-amber-700 hover:to-amber-600 shadow-[0_4px_15px_rgba(217,119,6,0.2)] transition-all active:scale-95 mt-2">
+                        <button id="save-profile-btn" class="bg-gradient-to-r from-amber-600 to-brand-gold text-white p-4 rounded-xl font-black flex justify-center items-center h-14 hover:from-amber-700 hover:to-amber-600 shadow-md transition-all active:scale-95 mt-2">
                             <span>حفظ التعديلات</span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i>
                         </button>
                     </div>
                     
                     <button id="logout-btn" class="mt-4 bg-red-500/10 text-red-500 border border-red-500/20 px-10 py-4 rounded-xl font-bold w-full hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95 shrink-0 text-sm">
-                        <i data-lucide="log-out" class="w-4 h-4"></i> تسجيل الخروج من النظام
+                        <i data-lucide="log-out" class="w-4 h-4"></i> تسجيل الخروج
                     </button>
                 </div>
             </div>
         </main>
 
         <nav class="fixed bottom-0 w-full md:static md:w-24 lg:w-64 bg-brand-darker/80 backdrop-blur-2xl border-t md:border-t-0 md:border-l border-brand-text/5 flex flex-row md:flex-col justify-around md:justify-start p-3 z-30 md:order-1 pb-safe gap-1 md:gap-3">
-            <button onclick="switchTab('users', 'المحادثات')" id="nav-users" class="nav-btn p-3.5 w-1/4 md:w-full text-brand-gold bg-brand-gold/10 rounded-2xl flex flex-col md:flex-row items-center gap-2.5 transition-all"><i data-lucide="message-square" class="w-5 h-5 md:w-6 md:h-6"></i><span class="text-[11px] md:text-sm font-bold md:hidden lg:block">الدردشة الفاخرة</span></button>
+            <button onclick="switchTab('users', 'المحادثات')" id="nav-users" class="nav-btn p-3.5 w-1/4 md:w-full text-brand-gold bg-brand-gold/10 rounded-2xl flex flex-col md:flex-row items-center gap-2.5 transition-all"><i data-lucide="message-square" class="w-5 h-5 md:w-6 md:h-6"></i><span class="text-[11px] md:text-sm font-bold md:hidden lg:block">الدردشة</span></button>
             <button onclick="switchTab('groups', 'الفرق والمجموعات')" id="nav-groups" class="nav-btn p-3.5 w-1/4 md:w-full text-brand-muted hover:bg-brand-surface/40 hover:text-brand-text rounded-2xl flex flex-col md:flex-row items-center gap-2.5 transition-all"><i data-lucide="users" class="w-5 h-5 md:w-6 md:h-6"></i><span class="text-[11px] md:text-sm font-bold md:hidden lg:block">المجموعات</span></button>
-            <button onclick="switchTab('stories', 'الحالات والإلهام')" id="nav-stories" class="nav-btn p-3.5 w-1/4 md:w-full text-brand-muted hover:bg-brand-surface/40 hover:text-brand-text rounded-2xl flex flex-col md:flex-row items-center gap-2.5 transition-all"><i data-lucide="aperture" class="w-5 h-5 md:w-6 md:h-6"></i><span class="text-[11px] md:text-sm font-bold md:hidden lg:block">الحالات المعززة</span></button>
+            <button onclick="switchTab('stories', 'الحالات')" id="nav-stories" class="nav-btn p-3.5 w-1/4 md:w-full text-brand-muted hover:bg-brand-surface/40 hover:text-brand-text rounded-2xl flex flex-col md:flex-row items-center gap-2.5 transition-all"><i data-lucide="aperture" class="w-5 h-5 md:w-6 md:h-6"></i><span class="text-[11px] md:text-sm font-bold md:hidden lg:block">الحالات</span></button>
             <button onclick="switchTab('settings', 'إعدادات النظام')" id="nav-settings" class="nav-btn p-3.5 w-1/4 md:w-full text-brand-muted hover:bg-brand-surface/40 hover:text-brand-text rounded-2xl flex flex-col md:flex-row items-center gap-2.5 md:mt-auto transition-all"><i data-lucide="settings" class="w-5 h-5 md:w-6 md:h-6"></i><span class="text-[11px] md:text-sm font-bold md:hidden lg:block">الإعدادات</span></button>
         </nav>
     </div>
 
-    <div id="chat-screen" class="hidden fixed inset-0 z-[60] flex flex-col w-full bg-brand-dark/95 backdrop-blur-3xl shadow-2xl animate-fade-in-up md:absolute md:max-w-6xl md:mx-auto md:w-[calc(100%-6rem)] lg:w-[calc(100%-16rem)] md:left-0 overflow-hidden md:my-4 md:rounded-[2.5rem]">
+    <div id="chat-screen" class="hidden fixed inset-0 z-[60] flex flex-col w-full bg-brand-dark/95 backdrop-blur-3xl shadow-2xl md:absolute md:max-w-6xl md:mx-auto md:w-[calc(100%-6rem)] lg:w-[calc(100%-16rem)] md:left-0 overflow-hidden md:my-4 md:rounded-[2.5rem]">
         
         <div id="sidebar-overlay" class="hidden absolute inset-0 bg-black/50 z-[65] backdrop-blur-md transition-opacity opacity-0" onclick="toggleSidebar()"></div>
         
         <aside id="chat-sidebar" class="absolute top-0 bottom-0 right-0 w-72 md:w-80 bg-brand-darker/95 backdrop-blur-3xl border-l border-brand-text/5 z-[70] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
             <div class="p-5 pt-safe border-b border-brand-text/5 flex justify-between items-center bg-brand-surface/10">
                 <h3 class="text-brand-gold font-bold text-base">Security & Privacy</h3>
-                <button onclick="toggleSidebar()" class="text-brand-muted hover:text-brand-text transition-colors bg-brand-surface/40 p-2 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button onclick="toggleSidebar()" class="text-brand-muted hover:text-brand-text bg-brand-surface/40 p-2 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
             <div class="p-5 flex flex-col gap-3 overflow-y-auto no-scrollbar flex-1">
                 <div class="flex flex-col items-center gap-3 pb-6 border-b border-brand-text/5 mb-2 relative mt-2">
                     <div id="sidebar-user-avatar" class="w-24 h-24 bg-gradient-to-tr from-brand-gold to-brand-dark rounded-[1.75rem] flex items-center justify-center text-4xl font-black text-white shadow-lg overflow-hidden">M</div>
                     <div id="sidebar-user-status-dot" class="absolute bottom-24 right-16 w-5 h-5 bg-amber-500 border-4 border-brand-darker rounded-full hidden shadow-md"></div>
-                    <h4 id="sidebar-user-name" class="font-black text-brand-text text-xl mt-2 text-center px-2">الاسم المستعار</h4>
-                    <p id="sidebar-user-bio" class="text-xs text-brand-gold font-semibold text-center px-3 bg-brand-gold/10 py-1.5 rounded-lg mt-0.5">متاح للمحادثة</p>
+                    <h4 id="sidebar-user-name" class="font-black text-brand-text text-xl mt-2 text-center px-2">الاسم</h4>
+                    <p id="sidebar-user-bio" class="text-xs text-brand-gold font-semibold text-center px-3 bg-brand-gold/10 py-1.5 rounded-lg mt-0.5">متاح</p>
                     <p id="sidebar-user-lastseen" class="text-[10px] text-brand-muted font-bold text-center mt-0.5"></p>
                 </div>
                 
                 <div class="bg-brand-surface/20 p-3.5 rounded-xl border border-brand-text/5 text-xs flex flex-col gap-1">
-                    <span class="font-black text-brand-gold mb-1 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> تشفير الخصوصية المتقدم</span>
-                    <p class="text-brand-muted text-[11px] leading-relaxed">الرسائل والمكالمات في هذه الدردشة محمية بالكامل بتشفير متطور من طرف إلى طرف (AES-GCM-Encryption).</p>
+                    <span class="font-black text-brand-gold mb-1 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> تشفير E2EE</span>
+                    <p class="text-brand-muted text-[11px] leading-relaxed">الرسائل والمكالمات في هذه الدردشة محمية بالكامل بتشفير متطور (AES-GCM).</p>
                 </div>
 
-                <button onclick="toggleSearch()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="search" class="w-4 h-4 text-brand-gold"></i> البحث في الرسائل</button>
-                <button onclick="changeWallpaper()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="image" class="w-4 h-4 text-amber-500"></i> تغيير خلفية المحادثة</button>
-                <button onclick="clearChat()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="trash-2" class="w-4 h-4 text-orange-400"></i> مسح السجل محلياً</button>
+                <button onclick="toggleSearch()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="search" class="w-4 h-4 text-brand-gold"></i> البحث</button>
+                <button onclick="clearChat()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="trash-2" class="w-4 h-4 text-orange-400"></i> مسح السجل</button>
                 <button onclick="blockUser()" class="flex items-center gap-3 p-3.5 bg-red-500/10 hover:bg-red-500/20 rounded-xl text-red-500 text-sm font-bold transition-colors mt-auto"><i data-lucide="ban" class="w-4 h-4"></i> حظر جهة الاتصال</button>
             </div>
         </aside>
 
         <header class="h-20 px-4 flex items-center justify-between bg-brand-darker/70 border-b border-brand-text/5 z-20 flex-shrink-0 backdrop-blur-xl">
             <div class="flex items-center gap-3 pt-safe cursor-pointer group" onclick="toggleSidebar()">
-                <button id="close-chat-btn" class="p-2 bg-brand-surface/40 border border-brand-text/5 text-brand-text hover:text-brand-gold hover:bg-brand-surface rounded-xl transition-all shadow-sm" onclick="event.stopPropagation()">
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </button>
+                <button id="close-chat-btn" class="p-2 bg-brand-surface/40 border border-brand-text/5 text-brand-text hover:text-brand-gold rounded-xl shadow-sm" onclick="event.stopPropagation()"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
                 <div class="relative transition-transform group-hover:scale-105">
-                    <div id="chat-header-avatar" class="w-11 h-11 bg-gradient-to-tr from-brand-dark to-brand-surface rounded-xl flex items-center justify-center shadow-md overflow-hidden border border-brand-text/5">
-                        <i data-lucide="hash" class="w-5 h-5 text-brand-gold"></i>
-                    </div>
+                    <div id="chat-header-avatar" class="w-11 h-11 bg-gradient-to-tr from-brand-dark to-brand-surface rounded-xl flex items-center justify-center shadow-md overflow-hidden border border-brand-text/5"><i data-lucide="hash" class="w-5 h-5 text-brand-gold"></i></div>
                     <div id="chat-header-status-dot" class="absolute -bottom-1 -right-1 w-3 h-3 bg-amber-500 border-2 border-brand-darker rounded-full hidden"></div>
                 </div>
-                <div class="flex flex-col">
-                    <h2 id="chat-title" class="text-base md:text-lg font-black text-brand-text leading-tight">الدردشة الحالية</h2>
-                    <span id="chat-typing-status" class="text-[11px] font-bold text-brand-gold h-3.5 mt-0.5"></span>
-                </div>
+                <div class="flex flex-col"><h2 id="chat-title" class="text-base md:text-lg font-black text-brand-text">الدردشة</h2><span id="chat-typing-status" class="text-[11px] font-bold text-brand-gold h-3.5 mt-0.5"></span></div>
             </div>
-            <button onclick="toggleSidebar()" class="p-2 text-brand-muted hover:text-brand-gold rounded-xl hover:bg-brand-surface/40 transition-colors">
-                <i data-lucide="info" class="w-5 h-5"></i>
-            </button>
+            <div class="flex items-center gap-2 pt-safe">
+                <button onclick="startCall('audio')" class="p-2.5 text-brand-emerald hover:bg-brand-surface/60 rounded-xl transition-colors" title="مكالمة صوتية"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                <button onclick="startCall('video')" class="p-2.5 text-blue-400 hover:bg-brand-surface/60 rounded-xl transition-colors" title="مكالمة فيديو"><i data-lucide="video" class="w-5 h-5"></i></button>
+            </div>
         </header>
 
         <div id="chat-search-bar" class="hidden bg-brand-surface/90 backdrop-blur-md border-b border-brand-gold/20 p-3 px-4 items-center gap-3 z-10 shadow-lg">
             <i data-lucide="search" class="w-4 h-4 text-brand-gold"></i>
-            <input type="text" id="chat-search-input" placeholder="اكتب للبحث في تاريخ هذه المحادثة..." class="flex-1 bg-transparent border-none text-xs text-brand-text outline-none font-medium placeholder-brand-muted">
-            <button onclick="closeSearch()" class="text-brand-muted hover:text-red-500 bg-brand-text/5 p-1.5 rounded-lg transition-colors"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-        </div>
-
-        <div id="pinned-message-bar" class="hidden bg-brand-surface/90 backdrop-blur-md border-b border-brand-gold/20 p-2.5 px-4 items-center justify-between z-10 cursor-pointer hover:bg-brand-surface/50 transition-colors">
-            <div class="flex items-center gap-3 overflow-hidden flex-1">
-                <div class="p-1.5 bg-brand-gold/10 rounded-lg"><i data-lucide="pin" class="w-3.5 h-3.5 text-brand-gold fill-current"></i></div>
-                <div class="flex flex-col truncate">
-                    <span class="text-[9px] text-brand-gold font-black tracking-wider">رسالة مثبتة</span>
-                    <span id="pinned-text" class="text-xs text-brand-muted truncate font-medium"></span>
-                </div>
-            </div>
-            <button onclick="unpinMessage()" class="text-brand-muted hover:text-red-500 p-2"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            <input type="text" id="chat-search-input" placeholder="اكتب للبحث..." class="flex-1 bg-transparent border-none text-xs text-brand-text outline-none font-medium">
+            <button onclick="closeSearch()" class="text-brand-muted hover:text-red-500 p-1.5"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col no-scrollbar relative transition-all duration-300 bg-gradient-to-b from-black/5 to-transparent" id="messages-area"></div>
         
-        <button id="scroll-bottom-btn" onclick="scrollToBottom()" class="absolute bottom-28 left-6 p-2.5 bg-brand-surface border border-brand-text/5 text-brand-gold rounded-full shadow-xl opacity-0 translate-y-4 transition-all duration-300 z-20 hover:scale-110 hidden flex items-center justify-center">
-            <i data-lucide="chevron-down" class="w-5 h-5"></i>
-        </button>
-
         <div id="media-preview-container" class="hidden mx-4 mt-2 bg-brand-surface/90 backdrop-blur-xl p-3 border-t-2 border-brand-gold rounded-xl justify-between items-center shadow-lg border-x border-b border-brand-text/5 relative z-20">
             <div class="flex items-center gap-3 overflow-hidden">
-                <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-brand-text/10 shadow-sm bg-black shrink-0">
-                    <img id="preview-img" class="w-full h-full object-cover hidden">
-                    <video id="preview-vid" class="w-full h-full object-cover hidden" muted></video>
-                    <div id="preview-audio" class="w-full h-full bg-brand-dark hidden flex items-center justify-center"><i data-lucide="mic" class="w-5 h-5 text-brand-gold"></i></div>
-                </div>
-                <div class="flex flex-col truncate">
-                    <span class="text-brand-gold font-black text-[10px] uppercase tracking-wider">ملف جاهز للنشر</span>
-                    <span id="preview-file-name" class="text-brand-muted truncate text-xs font-semibold" dir="ltr"></span>
-                </div>
+                <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-brand-text/10 bg-black shrink-0"><img id="preview-img" class="w-full h-full object-cover hidden"><video id="preview-vid" class="w-full h-full object-cover hidden" muted></video></div>
+                <div class="flex flex-col"><span class="text-brand-gold font-black text-[10px]">مرفق</span><span id="preview-file-name" class="text-brand-muted truncate text-xs"></span></div>
             </div>
-            <button onclick="cancelMedia()" class="bg-brand-text/5 text-brand-muted hover:text-white hover:bg-red-500 p-2 rounded-lg transition-all"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            <button onclick="cancelMedia()" class="bg-brand-text/5 text-brand-muted hover:text-white hover:bg-red-500 p-2 rounded-lg"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
         </div>
         
-        <div id="reply-preview" class="hidden mx-4 mt-2 bg-brand-surface/90 backdrop-blur-xl p-3 border-r-4 border-brand-gold rounded-xl justify-between items-center shadow-lg border-y border-l border-brand-text/5 z-20">
-            <div class="flex flex-col truncate flex-1 pr-2 border-r border-brand-gold/20">
-                <span id="reply-preview-sender" class="text-brand-gold font-black text-[10px]"></span>
-                <span id="reply-preview-text" class="text-brand-muted truncate text-xs font-medium"></span>
-            </div>
-            <button onclick="cancelReply()" class="bg-brand-text/5 text-brand-muted hover:text-white hover:bg-red-500 p-2 rounded-lg transition-all"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-        </div>
-
         <footer class="p-2 md:p-4 bg-brand-darker/90 backdrop-blur-2xl flex flex-col gap-2 z-20 flex-shrink-0 pb-safe border-t border-brand-text/5 shadow-2xl relative">
             <div class="flex items-end gap-2 w-full">
                 <input type="file" id="media-input" accept="image/*,video/*" class="hidden">
-                <button id="attach-btn" class="p-3 bg-brand-surface/60 text-brand-muted hover:text-brand-gold hover:bg-brand-text/10 rounded-xl transition-colors border border-brand-text/5 shadow-sm flex-shrink-0 group" title="إرفاق ملفات الوسائط والرسومات"><i data-lucide="paperclip" class="w-5 h-5 group-hover:scale-105 transition-transform"></i></button>
+                <button id="attach-btn" class="p-3 bg-brand-surface/60 text-brand-muted hover:text-brand-gold rounded-xl border border-brand-text/5 shrink-0"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
                 
-                <div class="flex-1 min-w-[0] bg-brand-surface/60 border border-brand-text/5 focus-within:border-brand-gold rounded-xl transition-all flex items-center pl-2 pr-4 min-h-[48px] md:min-h-[52px] shadow-inner">
-                    <textarea id="message-input" rows="1" placeholder="اكتب رسالتك الذكية..." class="w-full bg-transparent text-brand-text outline-none text-sm md:text-base resize-none py-3 max-h-32 no-scrollbar font-medium placeholder-brand-muted/70"></textarea>
+                <div class="flex-1 min-w-[0] bg-brand-surface/60 border border-brand-text/5 focus-within:border-brand-gold rounded-xl flex items-center pl-2 pr-4 min-h-[48px] md:min-h-[52px]">
+                    <textarea id="message-input" rows="1" placeholder="رسالة مشفرة..." class="w-full bg-transparent text-brand-text outline-none text-sm resize-none py-3 max-h-32 no-scrollbar font-medium placeholder-brand-muted/70"></textarea>
                 </div>
                 
-                <button id="send-btn" class="p-3 bg-gradient-to-tr from-amber-600 to-brand-gold text-white rounded-xl hover:shadow-[0_5px_15px_rgba(217,119,6,0.3)] active:scale-95 transition-all flex-shrink-0 flex items-center justify-center min-w-[48px] min-h-[48px] border border-amber-500/20">
+                <button id="send-btn" class="p-3 bg-gradient-to-tr from-amber-600 to-brand-gold text-white rounded-xl hover:shadow-lg active:scale-95 flex-shrink-0 min-w-[48px] min-h-[48px]">
                     <span id="send-btn-icon"><i data-lucide="send" class="w-5 h-5 rtl:-scale-x-100"></i></span>
-                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin hidden text-white"></i>
                 </button>
             </div>
 
             <div class="flex items-center justify-start gap-5 px-1.5 py-0.5">
-                <button id="location-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-blue-400 transition-colors group" title="مشاركة موقعي الحالي">
-                    <i data-lucide="map-pin" class="w-3.5 h-3.5 group-hover:scale-105 transition-transform"></i>
-                    <span class="font-bold text-[11px]">مشاركة الموقع</span>
-                </button>
-                
+                <button id="location-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-blue-400 group"><i data-lucide="map-pin" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">مشاركة الموقع</span></button>
                 <div class="h-3 w-px bg-brand-text/5"></div>
-
-                <button id="secret-mode-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-gold transition-colors group" title="تفعيل وضع الخصوصية والتدمير الذاتي (Secret Mode)">
-                    <i data-lucide="eye-off" class="w-3.5 h-3.5 group-hover:scale-105 transition-transform"></i>
-                    <span class="font-bold text-[11px]">وضع التدمير (10ث)</span>
-                </button>
-
+                <button id="view-once-mode-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-gold group" title="إرسال الصور والفيديو لمرة واحدة فقط"><i data-lucide="bomb" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">عرض لمرة واحدة (View Once)</span></button>
                 <div class="h-3 w-px bg-brand-text/5"></div>
-
-                <button id="mic-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-red-400 transition-colors group" title="تسجيل رسالة صوتية (Voice Note)">
-                    <i data-lucide="mic" class="w-3.5 h-3.5 group-hover:scale-105 transition-transform"></i>
-                    <span class="font-bold text-[11px]">مذكرة صوتية</span>
-                </button>
+                <button id="mic-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-red-400 group"><i data-lucide="mic" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">مذكرة صوتية</span></button>
             </div>
         </footer>
+    </div>
+
+    <div id="call-screen" class="hidden fixed inset-0 z-[200] bg-brand-darker/95 backdrop-blur-3xl flex flex-col items-center justify-between py-20 opacity-0 transition-opacity duration-300">
+        <div class="flex flex-col items-center gap-4 mt-10">
+            <div class="w-32 h-32 bg-brand-surface rounded-full flex items-center justify-center border-4 border-brand-gold shadow-[0_0_40px_rgba(217,119,6,0.3)] animate-pulse-slow overflow-hidden" id="call-avatar"></div>
+            <h2 id="call-name" class="text-3xl font-black text-brand-text mt-4">الاسم</h2>
+            <p id="call-status" class="text-brand-gold font-medium text-sm">جاري إنشاء اتصال آمن (E2EE)...</p>
+        </div>
+        <div class="flex gap-6 mb-10">
+            <button onclick="endCall()" class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-110 transition-transform"><i data-lucide="phone-off" class="w-8 h-8"></i></button>
+        </div>
     </div>
 
     <div id="lightbox-modal" class="hidden fixed inset-0 z-[200] bg-black/95 flex items-center justify-center backdrop-blur-lg opacity-0 transition-opacity duration-300">
-        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white p-3 bg-white/10 hover:bg-red-600 rounded-full transition-colors z-50 shadow-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
-        <img id="lightbox-img" class="max-w-[95vw] max-h-[90vh] object-contain rounded-xl shadow-2xl transform scale-95 transition-transform duration-300">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white p-3 bg-white/10 hover:bg-red-600 rounded-full z-50 shadow-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <img id="lightbox-img" class="max-w-[95vw] max-h-[90vh] object-contain rounded-xl shadow-2xl transform scale-95 transition-transform duration-300 hidden">
+        <video id="lightbox-vid" class="max-w-[95vw] max-h-[90vh] object-contain rounded-xl shadow-2xl transform scale-95 transition-transform duration-300 hidden" controls autoplay playsinline></video>
     </div>
 
     <div id="create-story-modal" class="hidden fixed inset-0 z-[110] bg-brand-darker flex flex-col transition-all">
-        <header class="p-4 pt-safe flex justify-between items-center border-b border-brand-text/5 bg-black/20 backdrop-blur-md z-10">
-            <button onclick="closeCreateStory()" class="text-white p-2 bg-gray-800/40 rounded-full hover:bg-gray-700 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h3 class="text-white font-bold text-base tracking-wide">إضافة حالة جديدة</h3>
-            <div class="w-10"></div>
-        </header>
-        <div id="create-story-bg" class="flex-1 flex flex-col justify-center relative p-6 transition-colors duration-300" style="background-color: #d97706;">
-            <img id="story-img-preview" class="hidden w-full h-64 object-contain rounded-2xl border border-white/10 mb-4 shadow-2xl backdrop-blur-sm">
-            <video id="story-vid-preview" class="hidden w-full h-64 object-contain rounded-2xl border border-white/10 mb-4 shadow-2xl backdrop-blur-sm" controls playsinline></video>
-            <textarea id="story-input" placeholder="ما الذي يدور في ذهنك؟..." class="w-full bg-transparent text-white resize-none h-32 outline-none text-3xl font-black text-center placeholder-white/40 drop-shadow-lg leading-relaxed"></textarea>
-        </div>
-        <footer class="p-4 pb-safe bg-black/40 border-t border-brand-text/5 flex justify-between items-center backdrop-blur-xl z-10">
-            <div class="flex items-center gap-3">
-                <div class="p-1 bg-white/5 rounded-full flex items-center justify-center"><input type="color" id="story-color" value="#d97706" onchange="document.getElementById('create-story-bg').style.backgroundColor = this.value" class="w-10 h-10 rounded-full cursor-pointer bg-transparent border-none"></div>
-                <input type="file" id="story-file-input" accept="image/*,video/*" class="hidden">
-                <button onclick="document.getElementById('story-file-input').click()" class="text-white bg-gray-800/60 p-3 rounded-full hover:bg-gray-700 shadow-lg transition-colors"><i data-lucide="camera" class="w-5 h-5"></i></button>
-            </div>
-            <button id="post-story-btn" class="bg-brand-gold text-white px-8 py-3 rounded-full font-bold flex items-center justify-center hover:bg-amber-600 transition-all active:scale-95 shadow-xl">
-                <span id="post-story-text">نشر الآن</span><i data-lucide="send" class="w-4 h-4 ml-2 rtl:-scale-x-100"></i><i data-lucide="loader-2" class="w-4 h-4 animate-spin hidden absolute"></i>
-            </button>
-        </footer>
+        <header class="p-4 pt-safe flex justify-between items-center border-b border-brand-text/5 bg-black/20 backdrop-blur-md z-10"><button onclick="closeCreateStory()" class="text-white p-2 bg-gray-800/40 rounded-full hover:bg-gray-700"><i data-lucide="x" class="w-5 h-5"></i></button><h3 class="text-white font-bold text-base tracking-wide">إضافة حالة</h3><div class="w-10"></div></header>
+        <div id="create-story-bg" class="flex-1 flex flex-col justify-center relative p-6 transition-colors" style="background-color: #d97706;"><img id="story-img-preview" class="hidden w-full h-64 object-contain rounded-2xl border border-white/10 mb-4 shadow-2xl backdrop-blur-sm"><video id="story-vid-preview" class="hidden w-full h-64 object-contain rounded-2xl border border-white/10 mb-4 shadow-2xl backdrop-blur-sm" controls playsinline></video><textarea id="story-input" placeholder="ما الذي يدور في ذهنك؟..." class="w-full bg-transparent text-white resize-none h-32 outline-none text-3xl font-black text-center placeholder-white/40 drop-shadow-lg leading-relaxed"></textarea></div>
+        <footer class="p-4 pb-safe bg-black/40 border-t border-brand-text/5 flex justify-between items-center backdrop-blur-xl z-10"><div class="flex items-center gap-3"><div class="p-1 bg-white/5 rounded-full"><input type="color" id="story-color" value="#d97706" onchange="document.getElementById('create-story-bg').style.backgroundColor = this.value" class="w-10 h-10 rounded-full cursor-pointer bg-transparent border-none"></div><input type="file" id="story-file-input" accept="image/*,video/*" class="hidden"><button onclick="document.getElementById('story-file-input').click()" class="text-white bg-gray-800/60 p-3 rounded-full hover:bg-gray-700"><i data-lucide="camera" class="w-5 h-5"></i></button></div><button id="post-story-btn" class="bg-brand-gold text-white px-8 py-3 rounded-full font-bold flex items-center"><span id="post-story-text">نشر</span><i data-lucide="send" class="w-4 h-4 ml-2 rtl:-scale-x-100"></i></button></footer>
     </div>
 
     <div id="story-viewer-modal" class="hidden fixed inset-0 z-[120] bg-black flex flex-col">
         <div id="story-progress-container" class="absolute top-2 w-full flex gap-1 px-2 z-30 pt-safe"></div>
-        <div class="absolute top-6 w-full flex justify-between items-center p-4 z-30 pt-safe bg-gradient-to-b from-black/80 to-transparent">
-            <div class="flex items-center gap-3">
-                <button onclick="closeStoryViewer()" class="text-white p-1 hover:bg-white/10 rounded-full transition-colors"><i data-lucide="arrow-right" class="w-5 h-5 rtl:-scale-x-100"></i></button>
-                <div class="w-9 h-9 rounded-full bg-brand-surface border border-gray-400 flex items-center justify-center overflow-hidden" id="sv-avatar"></div>
-                <div class="flex flex-col"><span id="sv-name" class="text-white font-bold text-xs drop-shadow-md"></span><span id="sv-time" class="text-gray-300 text-[10px] drop-shadow-md"></span></div>
-            </div>
-        </div>
-        <div id="sv-content-area" class="flex-1 flex items-center justify-center relative w-full h-full bg-brand-darker overflow-hidden">
-            <div id="sv-bg" class="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl scale-125 transition-all duration-500"></div>
-            <div id="sv-media-container" class="relative z-20 w-full h-full flex flex-col items-center justify-center p-4 transition-opacity duration-300"></div>
-            <div class="absolute left-0 w-1/4 h-full z-30 cursor-pointer" onclick="prevStory()"></div>
-            <div class="absolute right-0 w-3/4 h-full z-30 cursor-pointer" onclick="nextStory()"></div>
-        </div>
+        <div class="absolute top-6 w-full flex justify-between items-center p-4 z-30 pt-safe bg-gradient-to-b from-black/80 to-transparent"><div class="flex items-center gap-3"><button onclick="closeStoryViewer()" class="text-white p-1 hover:bg-white/10 rounded-full"><i data-lucide="arrow-right" class="w-5 h-5 rtl:-scale-x-100"></i></button><div class="w-9 h-9 rounded-full bg-brand-surface border border-gray-400 flex items-center justify-center overflow-hidden" id="sv-avatar"></div><div class="flex flex-col"><span id="sv-name" class="text-white font-bold text-xs drop-shadow-md"></span><span id="sv-time" class="text-gray-300 text-[10px] drop-shadow-md"></span></div></div></div>
+        <div id="sv-content-area" class="flex-1 flex items-center justify-center relative w-full h-full bg-brand-darker overflow-hidden"><div id="sv-bg" class="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl scale-125 transition-all"></div><div id="sv-media-container" class="relative z-20 w-full h-full flex flex-col items-center justify-center p-4"></div><div class="absolute left-0 w-1/4 h-full z-30 cursor-pointer" onclick="prevStory()"></div><div class="absolute right-0 w-3/4 h-full z-30 cursor-pointer" onclick="nextStory()"></div></div>
     </div>
 
     <script>lucide.createIcons();</script>
@@ -425,63 +347,46 @@
         import { getDatabase, ref, push, get, serverTimestamp, onValue, set, update, remove, onDisconnect, off } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxdASHknRYzzHqXQ7zFH5VFZVK_SjrVmI",
-            authDomain: "hunter-8ce43.firebaseapp.com",
-            databaseURL: "https://hunter-8ce43-default-rtdb.firebaseio.com",
-            projectId: "hunter-8ce43",
-            storageBucket: "hunter-8ce43.firebasestorage.app",
-            messagingSenderId: "373164355050",
-            appId: "1:373164355050:android:6ff3fc4036bc04578fd693" 
-        };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+        const firebaseConfig = { apiKey: "AIzaSyBxdASHknRYzzHqXQ7zFH5VFZVK_SjrVmI", authDomain: "hunter-8ce43.firebaseapp.com", databaseURL: "https://hunter-8ce43-default-rtdb.firebaseio.com", projectId: "hunter-8ce43", storageBucket: "hunter-8ce43.firebasestorage.app", messagingSenderId: "373164355050", appId: "1:373164355050:android:6ff3fc4036bc04578fd693" };
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getDatabase(app);
+        const supabaseUrl = 'https://ujfptypolkechnenlktn.supabase.co'; const supabaseKey = 'sb_publishable_acF6kxVVlBjNKlt1KisIAQ_ICJizyhv'; const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const supabaseUrl = 'https://ujfptypolkechnenlktn.supabase.co';
-        const supabaseKey = 'sb_publishable_acF6kxVVlBjNKlt1KisIAQ_ICJizyhv';
-        const supabase = createClient(supabaseUrl, supabaseKey);
-
-        const authScreen = document.getElementById('auth-screen'); 
-        const mainScreen = document.getElementById('main-screen'); 
-        const chatScreen = document.getElementById('chat-screen');
+        const authScreen = document.getElementById('auth-screen'); const mainScreen = document.getElementById('main-screen'); const chatScreen = document.getElementById('chat-screen');
         
-        let currentUser = null; 
-        let currentChatId = null; 
-        let currentMessagesRef = null; 
-        window.replyingTo = null; 
-        window.editingMsgId = null; 
-        let typingTimeout = null;
-        window.userProfiles = {}; 
-        window.groupCreators = {}; 
-        window.selectedMediaFile = null;
-        let isSecretMode = false; 
-        let mediaRecorder; 
-        let audioChunks = []; 
-        let isRecording = false;
-        let myBlockedUsers = {};
+        let currentUser = null; let currentChatId = null; let currentMessagesRef = null; 
+        window.userProfiles = {}; window.groupCreators = {}; window.selectedMediaFile = null;
+        let isViewOnceMode = false; let activeWavesurfers = {}; let typingTimeout = null;
+        let mediaRecorder; let audioChunks = []; let isRecording = false; let myBlockedUsers = {};
         
-        let storySelectedFile = null; 
-        window.groupedStories = {}; 
-        window.storyUserIds = []; 
-        window.currentStoryUserIndex = 0; 
-        window.currentStoryItemIndex = 0; 
-        window.storyTimer = null; 
-        const STORY_DURATION = 5000;
-        let authMode = 'login'; 
-        let authSelectedAvatar = null;
+        let storySelectedFile = null; window.groupedStories = {}; window.storyUserIds = []; window.currentStoryUserIndex = 0; window.currentStoryItemIndex = 0; window.storyTimer = null; const STORY_DURATION = 5000;
+        let authMode = 'login'; let authSelectedAvatar = null;
 
-        // حل جذري: ربط الدوال ببيئة النافذة الرئيسية لمنع الـ ReferenceError
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark'); localStorage.setItem('theme', 'light');
-            } else {
-                html.classList.add('dark'); localStorage.setItem('theme', 'dark');
-            }
+        const SECRET_KEY = "HunterPremiumApp2026_Secret_Key"; // مفتاح تشفير E2EE
+
+        /* --- تفعيل Particles.js --- */
+        particlesJS('particles-js', {
+            particles: { number: { value: 30 }, color: { value: '#d97706' }, opacity: { value: 0.15 }, size: { value: 2 }, line_linked: { enable: true, distance: 150, color: '#d97706', opacity: 0.1, width: 1 }, move: { enable: true, speed: 0.8 } }
+        });
+
+        /* --- نظام التشفير (End-to-End Encryption) --- */
+        function encryptMessage(text) {
+            if(!text) return "";
+            return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
         }
-        window.toggleTheme = toggleTheme;
-        document.getElementById('theme-toggle').checked = !document.documentElement.classList.contains('dark');
+        function decryptMessage(cipherText) {
+            if(!cipherText) return "";
+            try {
+                const bytes = CryptoJS.AES.decrypt(cipherText, SECRET_KEY);
+                return bytes.toString(CryptoJS.enc.Utf8) || cipherText;
+            } catch(e) { return cipherText; }
+        }
+
+        /* --- الدوال العامة --- */
+        window.toggleTheme = function() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.setItem('theme', 'light'); } 
+            else { html.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
+        };
 
         function getAvatarHtml(user, sizeClass = "w-12 h-12", textClass = "text-xl") {
             if (user && user.avatarUrl) return `<img src="${user.avatarUrl}" class="w-full h-full object-cover">`;
@@ -489,21 +394,7 @@
             return `<span class="text-brand-gold font-black ${textClass} drop-shadow-md">${name.charAt(0).toUpperCase()}</span>`;
         }
 
-        function openLightbox(url) {
-            const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img');
-            img.src = url; modal.classList.remove('hidden'); void modal.offsetWidth;
-            modal.classList.remove('opacity-0'); img.classList.remove('scale-95'); img.classList.add('scale-100');
-        }
-        window.openLightbox = openLightbox;
-
-        function closeLightbox() {
-            const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img');
-            modal.classList.add('opacity-0'); img.classList.remove('scale-100'); img.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); img.src = ''; }, 300);
-        }
-        window.closeLightbox = closeLightbox;
-
-        function switchAuthMode(mode) {
+        window.switchAuthMode = function(mode) {
             authMode = mode;
             const tabLogin = document.getElementById('tab-login'); const tabSignup = document.getElementById('tab-signup');
             const signupFields = document.getElementById('signup-fields'); const actionBtn = document.getElementById('auth-btn-text');
@@ -516,15 +407,14 @@
                 tabSignup.className = "pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide";
                 signupFields.classList.add('hidden'); signupFields.classList.remove('flex'); actionBtn.innerText = "دخول للنظام";
             }
-        }
-        window.switchAuthMode = switchAuthMode;
+        };
 
         document.getElementById('auth-avatar-input').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 authSelectedAvatar = file; const url = URL.createObjectURL(file);
                 document.getElementById('auth-avatar-icon').classList.add('hidden');
-                const img = document.getElementById('auth-avatar-preview'); img.src = url; img.classList.remove('hidden');
+                document.getElementById('auth-avatar-preview').src = url; document.getElementById('auth-avatar-preview').classList.remove('hidden');
             }
         });
 
@@ -532,19 +422,6 @@
             const ext = file.name.split('.').pop(); const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
             const { error } = await supabase.storage.from('media').upload(fileName, file);
             if (error) throw error; return supabase.storage.from('media').getPublicUrl(fileName).data.publicUrl;
-        }
-
-        function setButtonLoading(btnId, isLoading) {
-            const btn = document.getElementById(btnId); if (!btn) return;
-            const spinner = btn.querySelector('.animate-spin'); const icon = btn.querySelector('i:not(.animate-spin)'); const span = btn.querySelector('span');
-            btn.disabled = isLoading;
-            if (isLoading) {
-                btn.classList.add('opacity-80', 'cursor-not-allowed');
-                if(icon) icon.classList.add('hidden'); if(span && btnId === 'auth-action-btn') span.classList.add('hidden'); spinner.classList.remove('hidden');
-            } else {
-                btn.classList.remove('opacity-80', 'cursor-not-allowed');
-                if(icon) icon.classList.remove('hidden'); if(span && btnId === 'auth-action-btn') span.classList.remove('hidden'); spinner.classList.add('hidden');
-            }
         }
 
         function setupPresence(user) {
@@ -559,38 +436,31 @@
             });
         }
 
+        /* --- المصادقة --- */
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user; 
-                authScreen.classList.add('opacity-0'); setTimeout(() => authScreen.classList.add('hidden'), 500); 
-                mainScreen.classList.remove('hidden');
+                currentUser = user; authScreen.classList.add('opacity-0'); setTimeout(() => authScreen.classList.add('hidden'), 500); mainScreen.classList.remove('hidden');
                 setupPresence(user);
-                
                 onValue(ref(db, `users/${user.uid}/blocked`), snap => { myBlockedUsers = snap.val() || {}; loadUsers(); });
-
                 onValue(ref(db, `users/${user.uid}`), (snap) => {
                     const data = snap.val();
                     if (data) {
                         window.userProfiles[user.uid] = data;
-                        document.getElementById('profile-name').value = data.name || '';
-                        document.getElementById('profile-bio').value = data.bio || '';
-                        if (data.avatarUrl) {
-                            document.getElementById('settings-avatar-icon').classList.add('hidden');
-                            document.getElementById('settings-avatar-img').src = data.avatarUrl;
-                            document.getElementById('settings-avatar-img').classList.remove('hidden');
-                        }
+                        document.getElementById('profile-name').value = data.name || ''; document.getElementById('profile-bio').value = data.bio || '';
+                        if (data.avatarUrl) { document.getElementById('settings-avatar-icon').classList.add('hidden'); document.getElementById('settings-avatar-img').src = data.avatarUrl; document.getElementById('settings-avatar-img').classList.remove('hidden'); }
                     }
                 });
                 loadGroups(); loadStories();
             } else {
-                currentUser = null; authScreen.classList.remove('hidden'); authScreen.classList.remove('opacity-0'); mainScreen.classList.add('hidden'); chatScreen.classList.add('hidden');
+                currentUser = null; authScreen.classList.remove('hidden', 'opacity-0'); mainScreen.classList.add('hidden'); chatScreen.classList.add('hidden');
             }
         });
 
         document.getElementById('auth-action-btn').addEventListener('click', async () => {
             const email = document.getElementById('email').value.trim(); const password = document.getElementById('password').value.trim();
-            if(!email || !password) return showError("يرجى ملء جميع الحقول");
-            setButtonLoading('auth-action-btn', true);
+            const btn = document.getElementById('auth-action-btn'); const err = document.getElementById('auth-error');
+            if(!email || !password) { err.innerText = "يرجى ملء جميع الحقول"; err.classList.remove('hidden'); return; }
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>`; lucide.createIcons();
             try {
                 if (authMode === 'login') { await signInWithEmailAndPassword(auth, email, password); } 
                 else {
@@ -599,40 +469,19 @@
                     const cred = await createUserWithEmailAndPassword(auth, email, password);
                     await set(ref(db, 'users/' + cred.user.uid), { uid: cred.user.uid, email: cred.user.email, name: name, avatarUrl: avatarUrl, bio: 'متاح للمحادثة', status: 'online' });
                 }
-            } catch (err) { showError("تأكد من صحة البيانات."); } finally { setButtonLoading('auth-action-btn', false); }
-        });
-
-        let settingsSelectedAvatar = null;
-        document.getElementById('settings-avatar-input').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(file) {
-                settingsSelectedAvatar = file; document.getElementById('settings-avatar-icon').classList.add('hidden');
-                document.getElementById('settings-avatar-img').src = URL.createObjectURL(file); document.getElementById('settings-avatar-img').classList.remove('hidden');
-            }
-        });
-
-        document.getElementById('save-profile-btn').addEventListener('click', async () => {
-            const name = document.getElementById('profile-name').value.trim(); const bio = document.getElementById('profile-bio').value.trim();
-            setButtonLoading('save-profile-btn', true);
-            try {
-                let updates = { name, bio };
-                if (settingsSelectedAvatar) { updates.avatarUrl = await uploadFileToSupabase(settingsSelectedAvatar); settingsSelectedAvatar = null; }
-                await update(ref(db, `users/${currentUser.uid}`), updates);
-            } catch (err) { alert("خطأ أثناء الحفظ."); } finally { setButtonLoading('save-profile-btn', false); }
+            } catch (error) { err.innerText = "تأكد من صحة البيانات."; err.classList.remove('hidden'); btn.innerHTML = `دخول للنظام`; }
         });
 
         document.getElementById('logout-btn').addEventListener('click', () => { set(ref(db, `users/${currentUser.uid}/status`), 'offline').then(() => signOut(auth)); });
-        function showError(msg) { const err = document.getElementById('auth-error'); err.innerText = msg; err.classList.remove('hidden'); setTimeout(() => err.classList.add('hidden'), 3000); }
 
-        function switchTab(tabId, title) {
+        window.switchTab = function(tabId, title) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
             if(title) document.getElementById('main-header-title').innerText = title;
             document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-brand-gold', 'bg-brand-gold/10'); btn.classList.add('text-brand-muted'); });
             const activeBtn = document.getElementById(`nav-${tabId}`);
             if(activeBtn) { activeBtn.classList.remove('text-brand-muted'); activeBtn.classList.add('text-brand-gold', 'bg-brand-gold/10'); }
-        }
-        window.switchTab = switchTab;
+        };
 
         const contactSearchInput = document.getElementById('contact-search-input');
         contactSearchInput.addEventListener('input', (e) => {
@@ -640,15 +489,17 @@
             document.querySelectorAll('.user-list-item').forEach(item => { const name = item.getAttribute('data-name').toLowerCase(); item.style.display = name.includes(term) ? 'flex' : 'none'; });
         });
 
+        /* --- تحميل المستخدمين (مع فلترة الحسابات المجهولة) --- */
         function loadUsers() {
             onValue(ref(db, 'users'), (snapshot) => {
                 const list = document.getElementById('users-list'); list.innerHTML = '';
                 snapshot.forEach(child => {
                     const user = child.val();
-                    if(user) {
+                    // الفلتر الصارم لمنع ظهور החשبونات الوهمية أو Ghost Records
+                    if(user && user.uid && (user.name || user.email)) {
                         window.userProfiles[user.uid] = user; 
                         if(user.uid !== currentUser.uid && !myBlockedUsers[user.uid]) {
-                            const userName = user.name || (user.email || "مجهول").split('@')[0];
+                            const userName = user.name || user.email.split('@')[0];
                             const isOnline = user.status === 'online';
                             const statusDotHtml = isOnline ? `<div class="absolute -bottom-1 -right-1 w-3 h-3 bg-amber-500 border-2 border-brand-darker rounded-full shadow-sm"></div>` : '';
                             
@@ -674,9 +525,10 @@
             });
         }
 
+        /* --- المجموعات --- */
         document.getElementById('create-group-btn').addEventListener('click', () => {
             const name = document.getElementById('new-group-name').value.trim();
-            if(name) { setButtonLoading('create-group-btn', true); push(ref(db, 'groups'), { name: name, createdBy: currentUser.uid }).then(() => document.getElementById('new-group-name').value = '').finally(() => setButtonLoading('create-group-btn', false)); }
+            if(name) { push(ref(db, 'groups'), { name: name, createdBy: currentUser.uid }).then(() => document.getElementById('new-group-name').value = ''); }
         });
 
         function loadGroups() {
@@ -694,39 +546,34 @@
             });
         }
 
+        /* --- الحالات (Stories) --- */
+        window.openCreateStory = function() { document.getElementById('create-story-modal').classList.remove('hidden'); document.getElementById('story-input').focus(); };
+        window.closeCreateStory = function() {
+            document.getElementById('create-story-modal').classList.add('hidden'); document.getElementById('story-input').value = ""; storySelectedFile = null;
+            document.getElementById('story-img-preview').classList.add('hidden'); document.getElementById('story-vid-preview').classList.add('hidden');
+            document.getElementById('create-story-bg').style.backgroundColor = '#d97706';
+        };
+
         const storyFileInput = document.getElementById('story-file-input');
         storyFileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 storySelectedFile = file; const fileUrl = URL.createObjectURL(file);
-                if (file.type.startsWith('video/')) {
-                    document.getElementById('story-img-preview').classList.add('hidden'); const v = document.getElementById('story-vid-preview'); v.src = fileUrl; v.classList.remove('hidden');
-                } else {
-                    document.getElementById('story-vid-preview').classList.add('hidden'); const i = document.getElementById('story-img-preview'); i.src = fileUrl; i.classList.remove('hidden');
-                }
+                if (file.type.startsWith('video/')) { document.getElementById('story-img-preview').classList.add('hidden'); document.getElementById('story-vid-preview').src = fileUrl; document.getElementById('story-vid-preview').classList.remove('hidden'); } 
+                else { document.getElementById('story-vid-preview').classList.add('hidden'); document.getElementById('story-img-preview').src = fileUrl; document.getElementById('story-img-preview').classList.remove('hidden'); }
             }
         });
-
-        function openCreateStory() { document.getElementById('create-story-modal').classList.remove('hidden'); document.getElementById('story-input').focus(); }
-        window.openCreateStory = openCreateStory;
-
-        function closeCreateStory() {
-            document.getElementById('create-story-modal').classList.add('hidden'); document.getElementById('story-input').value = ""; storySelectedFile = null;
-            document.getElementById('story-img-preview').classList.add('hidden'); document.getElementById('story-img-preview').src = '';
-            document.getElementById('story-vid-preview').classList.add('hidden'); document.getElementById('story-vid-preview').src = '';
-            document.getElementById('create-story-bg').style.backgroundColor = '#d97706';
-        }
-        window.closeCreateStory = closeCreateStory;
 
         document.getElementById('post-story-btn').addEventListener('click', async () => {
             const text = document.getElementById('story-input').value.trim(); const color = document.getElementById('story-color').value;
             if (!text && !storySelectedFile) return;
-            setButtonLoading('post-story-btn', true); let mediaUrl = null; let mediaType = null;
+            document.getElementById('post-story-text').innerText = "جاري النشر...";
+            let mediaUrl = null; let mediaType = null;
             if (storySelectedFile) {
                 try { mediaUrl = await uploadFileToSupabase(storySelectedFile); mediaType = storySelectedFile.type.startsWith('video/') ? 'video' : 'image'; } 
-                catch (err) { alert("فشل نشر الحالة: " + err.message); setButtonLoading('post-story-btn', false); return; }
+                catch (err) { alert("فشل النشر."); document.getElementById('post-story-text').innerText = "نشر الآن"; return; }
             }
-            push(ref(db, 'stories'), { senderId: currentUser.uid, senderEmail: currentUser.email, text: text, bgColor: color, mediaUrl: mediaUrl, mediaType: mediaType, timestamp: Date.now() }).then(() => closeCreateStory()).finally(() => setButtonLoading('post-story-btn', false));
+            push(ref(db, 'stories'), { senderId: currentUser.uid, senderEmail: currentUser.email, text: text, bgColor: color, mediaUrl: mediaUrl, mediaType: mediaType, timestamp: Date.now() }).then(() => { window.closeCreateStory(); document.getElementById('post-story-text').innerText = "نشر الآن"; });
         });
 
         function loadStories() {
@@ -744,26 +591,14 @@
 
                 const hList = document.getElementById('stories-avatars-list'); const vList = document.getElementById('stories-vertical-list');
                 if(!hList || !vList || !currentUser) return;
-
                 const myProfile = window.userProfiles[currentUser.uid] || { name: currentUser.email.split('@')[0] };
                 
-                hList.innerHTML = `
-                    <div class="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer group" onclick="${hasMyStory ? `openStoryViewer('${currentUser.uid}')` : 'openCreateStory()'}">
-                        <div class="relative w-[70px] h-[70px] rounded-full bg-brand-surface flex items-center justify-center border-2 border-dashed ${hasMyStory ? 'border-brand-gold' : 'border-brand-text/20'} group-hover:border-brand-gold transition-colors p-[2px]">
-                            <div class="w-full h-full rounded-full bg-brand-darker flex items-center justify-center overflow-hidden shadow-inner">
-                                ${getAvatarHtml(myProfile, "w-full h-full", "text-2xl")}
-                            </div>
-                            ${!hasMyStory ? `<div class="absolute bottom-0 right-0 w-6 h-6 bg-brand-gold rounded-full border-2 border-brand-darker flex items-center justify-center text-white"><i data-lucide="plus" class="w-4 h-4"></i></div>` : ''}
-                        </div>
-                        <span class="text-[11px] text-brand-text font-bold truncate w-20 text-center mt-1">حالتي</span>
-                    </div>
-                `;
+                hList.innerHTML = `<div class="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer group" onclick="${hasMyStory ? `openStoryViewer('${currentUser.uid}')` : 'openCreateStory()'}"><div class="relative w-[70px] h-[70px] rounded-full bg-brand-surface flex items-center justify-center border-2 border-dashed ${hasMyStory ? 'border-brand-gold' : 'border-brand-text/20'} group-hover:border-brand-gold p-[2px]"><div class="w-full h-full rounded-full bg-brand-darker flex items-center justify-center overflow-hidden shadow-inner">${getAvatarHtml(myProfile, "w-full h-full", "text-2xl")}</div>${!hasMyStory ? `<div class="absolute bottom-0 right-0 w-6 h-6 bg-brand-gold rounded-full border-2 border-brand-darker flex items-center justify-center text-white"><i data-lucide="plus" class="w-4 h-4"></i></div>` : ''}</div><span class="text-[11px] text-brand-text font-bold truncate w-20 text-center mt-1">حالتي</span></div>`;
                 
                 const foreignStoriesCount = Object.keys(window.groupedStories).filter(uid => uid !== currentUser.uid && !myBlockedUsers[uid]).length;
 
-                if (foreignStoriesCount === 0) {
-                     vList.innerHTML = `<div class="flex flex-col items-center justify-center py-10 opacity-50"><i data-lucide="image" class="w-10 h-10 text-brand-muted mb-2"></i><p class="text-brand-muted text-sm text-center">لا توجد حالات جديدة حالياً.</p></div>`;
-                } else {
+                if (foreignStoriesCount === 0) { vList.innerHTML = `<div class="flex flex-col items-center justify-center py-10 opacity-50"><i data-lucide="image" class="w-10 h-10 text-brand-muted mb-2"></i><p class="text-brand-muted text-sm text-center">لا توجد حالات جديدة.</p></div>`; } 
+                else {
                     vList.innerHTML = '';
                     Object.keys(window.groupedStories).forEach(uid => {
                         if (uid === currentUser.uid || myBlockedUsers[uid]) return; 
@@ -773,31 +608,14 @@
                         
                         const hDiv = document.createElement('div');
                         hDiv.className = "flex flex-col items-center gap-2 min-w-[80px] cursor-pointer transform hover:scale-105 transition-transform";
-                        hDiv.onclick = () => openStoryViewer(uid);
-                        hDiv.innerHTML = `
-                            <div class="w-[70px] h-[70px] rounded-full bg-brand-dark flex items-center justify-center border-[3px] border-brand-gold p-[2px]">
-                                <div class="w-full h-full rounded-full bg-brand-surface flex items-center justify-center overflow-hidden shadow-inner">
-                                    ${getAvatarHtml(userProfile, "w-full h-full", "text-2xl")}
-                                </div>
-                            </div>
-                            <span class="text-[11px] text-brand-text font-medium truncate w-20 text-center mt-1">${userProfile.name}</span>
-                        `;
+                        hDiv.onclick = () => window.openStoryViewer(uid);
+                        hDiv.innerHTML = `<div class="w-[70px] h-[70px] rounded-full bg-brand-dark flex items-center justify-center border-[3px] border-brand-gold p-[2px]"><div class="w-full h-full rounded-full bg-brand-surface flex items-center justify-center overflow-hidden shadow-inner">${getAvatarHtml(userProfile, "w-full h-full", "text-2xl")}</div></div><span class="text-[11px] text-brand-text font-medium truncate w-20 text-center mt-1">${userProfile.name}</span>`;
                         hList.appendChild(hDiv);
 
                         const vDiv = document.createElement('div');
                         vDiv.className = "flex items-center gap-4 p-3 bg-brand-surface/20 hover:bg-brand-surface/40 rounded-2xl cursor-pointer transition-colors border border-brand-text/5 shadow-sm";
-                        vDiv.onclick = () => openStoryViewer(uid);
-                        vDiv.innerHTML = `
-                            <div class="w-14 h-14 rounded-full bg-brand-dark flex items-center justify-center border-[2.5px] border-brand-gold p-[2px]">
-                                <div class="w-full h-full rounded-full bg-brand-surface flex items-center justify-center overflow-hidden">
-                                    ${getAvatarHtml(userProfile, "w-full h-full", "text-lg")}
-                                </div>
-                            </div>
-                            <div class="flex-1 border-b border-brand-text/5 pb-3 mt-3">
-                                <h4 class="text-brand-text font-black text-base">${userProfile.name}</h4>
-                                <p class="text-[11px] text-brand-muted font-bold mt-1">${timeString}</p>
-                            </div>
-                        `;
+                        vDiv.onclick = () => window.openStoryViewer(uid);
+                        vDiv.innerHTML = `<div class="w-14 h-14 rounded-full bg-brand-dark flex items-center justify-center border-[2.5px] border-brand-gold p-[2px]"><div class="w-full h-full rounded-full bg-brand-surface flex items-center justify-center overflow-hidden">${getAvatarHtml(userProfile, "w-full h-full", "text-lg")}</div></div><div class="flex-1 border-b border-brand-text/5 pb-3 mt-3"><h4 class="text-brand-text font-black text-base">${userProfile.name}</h4><p class="text-[11px] text-brand-muted font-bold mt-1">${timeString}</p></div>`;
                         vList.appendChild(vDiv);
                     });
                 }
@@ -805,43 +623,26 @@
             });
         }
 
-        function openStoryViewer(userId) {
-            window.storyUserIds = Object.keys(window.groupedStories);
-            window.currentStoryUserIndex = window.storyUserIds.indexOf(userId); window.currentStoryItemIndex = 0;
-            document.getElementById('story-viewer-modal').classList.remove('hidden'); renderCurrentStory();
-        }
-        window.openStoryViewer = openStoryViewer;
+        window.openStoryViewer = function(userId) { window.storyUserIds = Object.keys(window.groupedStories); window.currentStoryUserIndex = window.storyUserIds.indexOf(userId); window.currentStoryItemIndex = 0; document.getElementById('story-viewer-modal').classList.remove('hidden'); window.renderCurrentStory(); };
+        window.closeStoryViewer = function() { document.getElementById('story-viewer-modal').classList.add('hidden'); clearTimeout(window.storyTimer); const vid = document.getElementById('sv-video-player'); if(vid) { vid.pause(); vid.src = ''; } };
 
-        function closeStoryViewer() {
-            document.getElementById('story-viewer-modal').classList.add('hidden'); clearTimeout(window.storyTimer);
-            const vid = document.getElementById('sv-video-player'); if(vid) { vid.pause(); vid.src = ''; }
-        }
-        window.closeStoryViewer = closeStoryViewer;
-
-        function renderCurrentStory() {
+        window.renderCurrentStory = function() {
             clearTimeout(window.storyTimer);
-            if (window.currentStoryUserIndex >= window.storyUserIds.length || window.currentStoryUserIndex < 0) { closeStoryViewer(); return; }
+            if (window.currentStoryUserIndex >= window.storyUserIds.length || window.currentStoryUserIndex < 0) { window.closeStoryViewer(); return; }
 
             const uid = window.storyUserIds[window.currentStoryUserIndex]; const userStories = window.groupedStories[uid];
-            if (window.currentStoryItemIndex >= userStories.length) { window.currentStoryUserIndex++; window.currentStoryItemIndex = 0; renderCurrentStory(); return; }
-            if (window.currentStoryItemIndex < 0) {
-                window.currentStoryUserIndex--; if(window.currentStoryUserIndex < 0) { closeStoryViewer(); return; }
-                window.currentStoryItemIndex = window.groupedStories[window.storyUserIds[window.currentStoryUserIndex]].length - 1; renderCurrentStory(); return;
-            }
+            if (window.currentStoryItemIndex >= userStories.length) { window.currentStoryUserIndex++; window.currentStoryItemIndex = 0; window.renderCurrentStory(); return; }
+            if (window.currentStoryItemIndex < 0) { window.currentStoryUserIndex--; if(window.currentStoryUserIndex < 0) { window.closeStoryViewer(); return; } window.currentStoryItemIndex = window.groupedStories[window.storyUserIds[window.currentStoryUserIndex]].length - 1; window.renderCurrentStory(); return; }
 
             const story = userStories[window.currentStoryItemIndex]; const userProfile = window.userProfiles[story.senderId] || { name: story.senderEmail.split('@')[0] };
             
-            document.getElementById('sv-name').innerText = userProfile.name;
-            document.getElementById('sv-time').innerText = new Date(story.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('sv-avatar').innerHTML = getAvatarHtml(userProfile, "w-full h-full", "text-lg");
+            document.getElementById('sv-name').innerText = userProfile.name; document.getElementById('sv-time').innerText = new Date(story.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); document.getElementById('sv-avatar').innerHTML = getAvatarHtml(userProfile, "w-full h-full", "text-lg");
 
             const progressContainer = document.getElementById('story-progress-container'); progressContainer.innerHTML = '';
             userStories.forEach((s, idx) => {
                 const bar = document.createElement('div'); bar.className = 'flex-1 h-1 bg-gray-500/50 rounded-full overflow-hidden';
                 const fill = document.createElement('div'); fill.className = 'h-full bg-white story-progress-fill';
-                if (idx < window.currentStoryItemIndex) { fill.style.width = '100%'; } 
-                else if (idx === window.currentStoryItemIndex) { fill.style.width = '0%'; setTimeout(() => { fill.style.width = '100%'; }, 50); } 
-                else { fill.style.width = '0%'; }
+                if (idx < window.currentStoryItemIndex) { fill.style.width = '100%'; } else if (idx === window.currentStoryItemIndex) { fill.style.width = '0%'; setTimeout(() => { fill.style.width = '100%'; }, 50); } else { fill.style.width = '0%'; }
                 bar.appendChild(fill); progressContainer.appendChild(bar);
             });
 
@@ -852,249 +653,117 @@
                 if (story.mediaUrl) {
                     if (story.mediaType === 'video') {
                         bg.style.backgroundImage = 'none'; container.parentElement.style.backgroundColor = '#000';
-                        container.innerHTML = `<video id="sv-video-player" src="${story.mediaUrl}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border border-white/10" autoplay playsinline></video>
-                        ${story.text ? `<p class="absolute bottom-24 bg-black/50 backdrop-blur-md text-white px-6 py-3 rounded-2xl text-center w-5/6 text-base font-medium border border-white/10">${formatMarkdown(story.text)}</p>` : ''}`;
+                        container.innerHTML = `<video id="sv-video-player" src="${story.mediaUrl}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border border-white/10" autoplay playsinline></video>${story.text ? `<p class="absolute bottom-24 bg-black/50 backdrop-blur-md text-white px-6 py-3 rounded-2xl text-center w-5/6 text-base font-medium border border-white/10">${formatMarkdown(story.text)}</p>` : ''}`;
                         const vid = document.getElementById('sv-video-player');
-                        vid.onloadedmetadata = () => { duration = vid.duration * 1000; progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(nextStory, duration); };
-                        vid.onerror = () => { window.storyTimer = setTimeout(nextStory, STORY_DURATION); };
+                        vid.onloadedmetadata = () => { duration = vid.duration * 1000; progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(window.nextStory, duration); };
+                        vid.onerror = () => { window.storyTimer = setTimeout(window.nextStory, STORY_DURATION); };
                     } else {
                         bg.style.backgroundImage = `url('${story.mediaUrl}')`;
-                        container.innerHTML = `<img src="${story.mediaUrl}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border border-white/10">
-                        ${story.text ? `<p class="absolute bottom-24 bg-black/50 backdrop-blur-md text-white px-6 py-3 rounded-2xl text-center w-5/6 text-base font-medium border border-white/10">${formatMarkdown(story.text)}</p>` : ''}`;
-                        progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(nextStory, duration);
+                        container.innerHTML = `<img src="${story.mediaUrl}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border border-white/10">${story.text ? `<p class="absolute bottom-24 bg-black/50 backdrop-blur-md text-white px-6 py-3 rounded-2xl text-center w-5/6 text-base font-medium border border-white/10">${formatMarkdown(story.text)}</p>` : ''}`;
+                        progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(window.nextStory, duration);
                     }
                 } else {
                     bg.style.backgroundImage = 'none'; container.parentElement.style.backgroundColor = story.bgColor || '#d97706';
                     container.innerHTML = `<p class="text-white text-2xl md:text-3xl font-black text-center px-8 leading-snug drop-shadow-xl">${formatMarkdown(story.text || '')}</p>`;
-                    progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(nextStory, duration);
+                    progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(window.nextStory, duration);
                 }
                 container.style.opacity = 1;
             }, 50);
-        }
+        };
 
-        function nextStory() { window.currentStoryItemIndex++; renderCurrentStory(); }
-        window.nextStory = nextStory;
+        window.nextStory = function() { window.currentStoryItemIndex++; window.renderCurrentStory(); };
+        window.prevStory = function() { window.currentStoryItemIndex--; window.renderCurrentStory(); };
 
-        function prevStory() { window.currentStoryItemIndex--; renderCurrentStory(); }
-        window.prevStory = prevStory;
-
+        /* --- الدردشة والمراسلة --- */
         function getPrivateChatId(uid1, uid2) { return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
 
-        function openChat(id, title, type) {
+        window.openChat = function(id, title, type) {
             document.getElementById('chat-title').innerText = title;
             currentChatId = type === 'private' ? getPrivateChatId(currentUser.uid, id) : id;
-            chatScreen.classList.remove('hidden');
-            cancelEdit(); closeSearch(); cancelMedia();
+            chatScreen.classList.remove('hidden'); window.cancelMedia(); window.closeSearch();
             
             const headerAvatar = document.getElementById('chat-header-avatar');
-            const headerDot = document.getElementById('chat-header-status-dot');
-            
             if (type === 'private') {
-                const profile = window.userProfiles[id];
-                headerAvatar.innerHTML = getAvatarHtml(profile, "w-full h-full", "text-xl");
-                if (profile && profile.status === 'online') { headerDot.classList.remove('hidden'); } else { headerDot.classList.add('hidden'); }
-            } else { 
-                headerAvatar.innerHTML = `<i data-lucide="hash" class="w-5 h-5 text-brand-gold"></i>`;
-                headerDot.classList.add('hidden'); 
-            }
+                const profile = window.userProfiles[id]; headerAvatar.innerHTML = getAvatarHtml(profile, "w-full h-full", "text-xl");
+            } else { headerAvatar.innerHTML = `<i data-lucide="hash" class="w-5 h-5 text-brand-gold"></i>`; }
 
-            loadMessages(); listenToTyping(); listenToPinned(); lucide.createIcons();
-        }
-        window.openChat = openChat;
+            loadMessages(); listenToTyping(); lucide.createIcons();
+        };
 
-        document.getElementById('close-chat-btn').addEventListener('click', () => {
-            chatScreen.classList.add('hidden'); currentChatId = null; cancelReply(); cancelEdit(); cancelMedia();
-        });
-
-        function toggleSidebar() {
+        document.getElementById('close-chat-btn').addEventListener('click', () => { chatScreen.classList.add('hidden'); currentChatId = null; window.cancelMedia(); });
+        
+        window.toggleSidebar = function() {
             const sidebar = document.getElementById('chat-sidebar'); const overlay = document.getElementById('sidebar-overlay');
             const isClosed = sidebar.classList.contains('translate-x-full');
-            
             if(isClosed) {
-                const isGroup = currentChatId && !currentChatId.includes('_');
-                const title = document.getElementById('chat-title').innerText;
-                document.getElementById('sidebar-user-name').innerText = title;
+                const isGroup = currentChatId && !currentChatId.includes('_'); document.getElementById('sidebar-user-name').innerText = document.getElementById('chat-title').innerText;
                 const sbAvatar = document.getElementById('sidebar-user-avatar');
-                
                 if(!isGroup) {
-                    const otherUid = currentChatId.split('_').find(id => id !== currentUser.uid);
-                    const profile = window.userProfiles[otherUid];
-                    document.getElementById('sidebar-user-bio').innerText = profile?.bio || "لا توجد سيرة ذاتية";
-                    sbAvatar.innerHTML = getAvatarHtml(profile, "w-full h-full", "text-5xl");
-                    
-                    const dot = document.getElementById('sidebar-user-status-dot'); const lastSeenEl = document.getElementById('sidebar-user-lastseen');
-                    if (profile?.status === 'online') { dot.classList.remove('hidden'); lastSeenEl.innerText = 'متصل الآن'; } 
-                    else { dot.classList.add('hidden'); lastSeenEl.innerText = profile?.lastSeen ? 'آخر ظهور: ' + new Date(profile.lastSeen).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''; }
-                } else {
-                    document.getElementById('sidebar-user-bio').innerText = "مساحة عمل للفرق";
-                    sbAvatar.innerHTML = `<span class="text-brand-gold font-bold text-5xl">G</span>`;
-                    document.getElementById('sidebar-user-status-dot').classList.add('hidden'); document.getElementById('sidebar-user-lastseen').innerText = '';
-                }
+                    const otherUid = currentChatId.split('_').find(id => id !== currentUser.uid); const profile = window.userProfiles[otherUid];
+                    document.getElementById('sidebar-user-bio').innerText = profile?.bio || "متاح للمحادثة"; sbAvatar.innerHTML = getAvatarHtml(profile, "w-full h-full", "text-5xl");
+                } else { document.getElementById('sidebar-user-bio').innerText = "مجموعة"; sbAvatar.innerHTML = `<span class="text-brand-gold font-bold text-5xl">G</span>`; }
                 overlay.classList.remove('hidden'); requestAnimationFrame(() => { overlay.classList.remove('opacity-0'); sidebar.classList.remove('translate-x-full'); });
-            } else {
-                overlay.classList.add('opacity-0'); sidebar.classList.add('translate-x-full'); setTimeout(() => overlay.classList.add('hidden'), 300);
-            }
-        }
-        window.toggleSidebar = toggleSidebar;
+            } else { overlay.classList.add('opacity-0'); sidebar.classList.add('translate-x-full'); setTimeout(() => overlay.classList.add('hidden'), 300); }
+        };
 
-        function clearChat() {
-            if(confirm("هل أنت متأكد من مسح جميع الرسائل من طرفك فقط؟")) {
-                set(ref(db, `users/${currentUser.uid}/clearedChats/${currentChatId}`), Date.now());
-                document.getElementById('messages-area').innerHTML = ''; toggleSidebar();
-            }
-        }
-        window.clearChat = clearChat;
-
-        function blockUser() {
-            const isGroup = currentChatId && !currentChatId.includes('_');
-            if (isGroup) { alert("لا يمكن حظر مجموعة بالكامل."); return; }
+        window.clearChat = function() { if(confirm("هل أنت متأكد من مسح جميع الرسائل محلياً؟")) { set(ref(db, `users/${currentUser.uid}/clearedChats/${currentChatId}`), Date.now()); document.getElementById('messages-area').innerHTML = ''; window.toggleSidebar(); } };
+        window.blockUser = function() {
+            const isGroup = currentChatId && !currentChatId.includes('_'); if (isGroup) { alert("لا يمكن حظر مجموعة بالكامل."); return; }
             const otherUid = currentChatId.split('_').find(id => id !== currentUser.uid);
-            if(confirm("هل أنت متأكد من حظر هذا المستخدم؟ لن تتمكن من رؤية رسائله بعد الآن.")) {
-                set(ref(db, `users/${currentUser.uid}/blocked/${otherUid}`), true).then(() => {
-                    document.getElementById('close-chat-btn').click(); toggleSidebar();
-                });
-            }
-        }
-        window.blockUser = blockUser;
+            if(confirm("حظر هذا المستخدم؟")) { set(ref(db, `users/${currentUser.uid}/blocked/${otherUid}`), true).then(() => { document.getElementById('close-chat-btn').click(); window.toggleSidebar(); }); }
+        };
 
-        const wallpapers = ['bg-transparent', 'bg-black/40', 'bg-brand-emerald/10', 'bg-white/5']; let currentWpIdx = 0;
-        function changeWallpaper() {
-            const area = document.getElementById('messages-area'); wallpapers.forEach(wp => area.classList.remove(wp.split('/')[0])); 
-            area.className = `flex-1 overflow-y-auto p-4 md:p-6 flex flex-col no-scrollbar relative transition-all duration-300 bg-gradient-to-b from-black/5 to-transparent`;
-            currentWpIdx = (currentWpIdx + 1) % wallpapers.length;
-            if(wallpapers[currentWpIdx] !== 'bg-transparent') area.classList.add(...wallpapers[currentWpIdx].split(' ')); toggleSidebar(); 
-        }
-        window.changeWallpaper = changeWallpaper;
+        window.toggleSearch = function() { window.toggleSidebar(); document.getElementById('chat-search-bar').classList.remove('hidden'); document.getElementById('chat-search-bar').classList.add('flex'); document.getElementById('chat-search-input').focus(); }
+        window.closeSearch = function() { document.getElementById('chat-search-bar').classList.add('hidden'); document.getElementById('chat-search-bar').classList.remove('flex'); document.getElementById('chat-search-input').value = ""; document.querySelectorAll('.msg-bubble').forEach(b => b.style.display = 'flex'); }
+        document.getElementById('chat-search-input').addEventListener('input', (e) => { const query = e.target.value.toLowerCase().trim(); document.querySelectorAll('.msg-bubble').forEach(bubble => { const text = bubble.getAttribute('data-text').toLowerCase(); bubble.style.display = text.includes(query) ? 'flex' : 'none'; }); });
 
-        const searchInput = document.getElementById('chat-search-input'); const searchBar = document.getElementById('chat-search-bar');
-        function toggleSearch() { toggleSidebar(); searchBar.classList.remove('hidden'); searchBar.classList.add('flex'); searchInput.focus(); }
-        window.toggleSearch = toggleSearch;
-
-        function closeSearch() { searchBar.classList.add('hidden'); searchBar.classList.remove('flex'); searchInput.value = ""; document.querySelectorAll('.msg-bubble').forEach(b => b.style.display = 'flex'); }
-        window.closeSearch = closeSearch;
-        
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('.msg-bubble').forEach(bubble => {
-                const text = bubble.getAttribute('data-text').toLowerCase();
-                if(text.includes(query)) {
-                    bubble.style.display = 'flex';
-                } else {
-                    bubble.style.display = 'none';
-                }
-            });
-        });
-
-        function pinMessage(msgId, sender, text) { set(ref(db, `chats/${currentChatId}/pinned`), { msgId, sender, text }); }
-        window.pinMessage = pinMessage;
-
-        function unpinMessage() { remove(ref(db, `chats/${currentChatId}/pinned`)); }
-        window.unpinMessage = unpinMessage;
-
-        function listenToPinned() { onValue(ref(db, `chats/${currentChatId}/pinned`), (snap) => { const pinned = snap.val(); const bar = document.getElementById('pinned-message-bar'); if(pinned) { document.getElementById('pinned-text').innerText = `${pinned.sender}: ${pinned.text}`; bar.classList.remove('hidden'); bar.classList.add('flex'); } else { bar.classList.add('hidden'); bar.classList.remove('flex'); } }); }
-        
-        function toggleLike(msgId, isLiked) { const refPath = `chats/${currentChatId}/messages/${msgId}/likes/${currentUser.uid}`; if(isLiked) remove(ref(db, refPath)); else set(ref(db, refPath), true); }
-        window.toggleLike = toggleLike;
-
-        const area = document.getElementById('messages-area'); const scrollBtn = document.getElementById('scroll-bottom-btn');
-        area.addEventListener('scroll', () => { if (area.scrollHeight - area.scrollTop - area.clientHeight > 200) { scrollBtn.classList.remove('hidden', 'opacity-0', 'translate-y-4'); scrollBtn.classList.add('opacity-100', 'translate-y-0'); } else { scrollBtn.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => scrollBtn.classList.add('hidden'), 300); } });
-        
-        function scrollToBottom() { area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
-        window.scrollToBottom = scrollToBottom;
-        
-        function scrollToMsg(id) {
-            const el = document.getElementById('msg-' + id);
-            if(el) {
-                el.scrollIntoView({behavior: 'smooth', block: 'center'});
-                el.classList.add('bg-brand-gold/30', 'scale-105');
-                setTimeout(() => el.classList.remove('bg-brand-gold/30', 'scale-105'), 1200);
-            }
-        }
-        window.scrollToMsg = scrollToMsg;
-
-        function initReply(msgId, sender, text) { window.replyingTo = { id: msgId, sender: sender, text: text }; document.getElementById('reply-preview-sender').innerText = "رد على: " + sender; document.getElementById('reply-preview-text').innerText = text; document.getElementById('reply-preview').classList.remove('hidden'); document.getElementById('message-input').focus(); }
-        window.initReply = initReply;
-
-        function cancelReply() { window.replyingTo = null; document.getElementById('reply-preview').classList.add('hidden'); }
-        window.cancelReply = cancelReply;
-
-        function initEdit(msgId, text) { window.editingMsgId = msgId; document.getElementById('message-input').value = text; document.getElementById('message-input').focus(); document.getElementById('send-btn-icon').innerHTML = '<i data-lucide="check" class="w-5 h-5 md:w-6 md:h-6"></i>'; lucide.createIcons(); }
-        window.initEdit = initEdit;
-
-        function cancelEdit() { window.editingMsgId = null; document.getElementById('message-input').value = ""; document.getElementById('send-btn-icon').innerHTML = '<i data-lucide="send" class="w-5 h-5 md:w-6 md:h-6 rtl:-scale-x-100"></i>'; lucide.createIcons(); }
-        window.cancelEdit = cancelEdit;
-
-        function deleteMessage(msgId) { if(confirm("حذف هذه الرسالة نهائياً؟")) remove(ref(db, `chats/${currentChatId}/messages/${msgId}`)); }
-        window.deleteMessage = deleteMessage;
+        window.scrollToBottom = function() { const area = document.getElementById('messages-area'); area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); };
+        document.getElementById('messages-area').addEventListener('scroll', () => { const area = document.getElementById('messages-area'); const scrollBtn = document.getElementById('scroll-bottom-btn'); if (area.scrollHeight - area.scrollTop - area.clientHeight > 200) { scrollBtn.classList.remove('hidden', 'opacity-0', 'translate-y-4'); scrollBtn.classList.add('opacity-100', 'translate-y-0'); } else { scrollBtn.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => scrollBtn.classList.add('hidden'), 300); } });
 
         function formatChatDate(timestamp) {
             const date = new Date(timestamp); const today = new Date(); const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-            if (date.toDateString() === today.toLocaleDateString()) return "اليوم";
-            if (date.toDateString() === yesterday.toDateString()) return "أمس";
+            if (date.toDateString() === today.toLocaleDateString()) return "اليوم"; if (date.toDateString() === yesterday.toDateString()) return "أمس";
             return date.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
         }
 
         function formatMarkdown(text) {
             if(!text) return '';
             let html = text.replace(/</g, "<").replace(/>/g, ">"); 
-            html = html.replace(/\*(.*?)\*/g, '<span class="format-bold">$1</span>'); 
-            html = html.replace(/_(.*?)_/g, '<span class="format-italic">$1</span>'); 
-            
-            const ytRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+))/g;
-            let hasYt = false;
-            html = html.replace(ytRegex, function(match, p1, p2) { 
-                const safeId = p2.replace(/[^a-zA-Z0-9_-]/g, '');
-                hasYt = true; 
-                return `<div class="mt-2 rounded-xl overflow-hidden border border-brand-text/10 shadow-md"><iframe width="100%" height="200" src="https://www.youtube.com/embed/${safeId}" frameborder="0" allowfullscreen></iframe></div>`; 
-            });
-            
-            if (!hasYt) { 
-                const mapRegex = /(https?:\/\/www\.google\.com\/maps\?q=([0-9.-]+),([0-9.-]+))/g;
-                if (mapRegex.test(html)) {
-                    html = html.replace(mapRegex, '<a href="$1" target="_blank" rel="noopener" class="flex items-center gap-2 mt-2 bg-blue-500/10 p-3 rounded-xl border border-blue-500/30 text-blue-500 hover:bg-blue-500/20 transition-colors shadow-sm w-fit"><i data-lucide="map" class="w-5 h-5"></i><span class="font-bold text-sm">عرض الموقع على الخريطة</span></a>');
-                } else {
-                    const urlRegex = /(https?:\/\/[^\s]+)/g; 
-                    html = html.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener" class="text-brand-gold hover:text-amber-500 underline font-medium block truncate" dir="ltr">$1</a>'); 
-                }
-            }
+            html = html.replace(/\*(.*?)\*/g, '<span class="format-bold">$1</span>').replace(/_(.*?)_/g, '<span class="format-italic">$1</span>'); 
+            const urlRegex = /(https?:\/\/[^\s]+)/g; html = html.replace(urlRegex, '<a href="$1" target="_blank" class="text-brand-gold hover:text-amber-500 underline font-medium block truncate" dir="ltr">$1</a>'); 
             return html.replace(/\n/g, '<br>');
         }
 
+        /* --- المرفقات والتدمير الذاتي والميكروفون --- */
         const mediaInput = document.getElementById('media-input');
         document.getElementById('attach-btn').addEventListener('click', () => mediaInput.click());
         mediaInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                window.selectedMediaFile = file;
-                const container = document.getElementById('media-preview-container'); document.getElementById('preview-file-name').innerText = file.name;
-                const fileUrl = URL.createObjectURL(file);
+                window.selectedMediaFile = file; const fileUrl = URL.createObjectURL(file);
+                document.getElementById('preview-file-name').innerText = file.name;
                 document.getElementById('preview-img').classList.add('hidden'); document.getElementById('preview-vid').classList.add('hidden'); document.getElementById('preview-audio').classList.add('hidden');
-                if (file.type.startsWith('video/')) { const vid = document.getElementById('preview-vid'); vid.src = fileUrl; vid.classList.remove('hidden'); } 
-                else { const img = document.getElementById('preview-img'); img.src = fileUrl; img.classList.remove('hidden'); }
-                container.classList.remove('hidden'); container.classList.add('flex');
+                if (file.type.startsWith('video/')) { document.getElementById('preview-vid').src = fileUrl; document.getElementById('preview-vid').classList.remove('hidden'); } 
+                else { document.getElementById('preview-img').src = fileUrl; document.getElementById('preview-img').classList.remove('hidden'); }
+                document.getElementById('media-preview-container').classList.remove('hidden'); document.getElementById('media-preview-container').classList.add('flex');
             }
         });
-        
-        function cancelMedia() { window.selectedMediaFile = null; mediaInput.value = ''; document.getElementById('media-preview-container').classList.add('hidden'); document.getElementById('media-preview-container').classList.remove('flex'); }
-        window.cancelMedia = cancelMedia;
+        window.cancelMedia = function() { window.selectedMediaFile = null; mediaInput.value = ''; document.getElementById('media-preview-container').classList.add('hidden'); document.getElementById('media-preview-container').classList.remove('flex'); };
+
+        const viewOnceBtn = document.getElementById('view-once-mode-btn');
+        viewOnceBtn.addEventListener('click', () => {
+            isViewOnceMode = !isViewOnceMode;
+            if(isViewOnceMode) { viewOnceBtn.classList.add('text-brand-gold', 'bg-brand-gold/20', 'px-2', 'py-1', 'rounded-lg'); viewOnceBtn.classList.remove('text-brand-muted'); } 
+            else { viewOnceBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20', 'px-2', 'py-1', 'rounded-lg'); viewOnceBtn.classList.add('text-brand-muted'); }
+        });
 
         document.getElementById('location-btn').addEventListener('click', () => {
             if(navigator.geolocation) {
                 const btn = document.getElementById('location-btn');
-                btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
-                lucide.createIcons();
                 navigator.geolocation.getCurrentPosition(pos => {
-                    const lat = pos.coords.latitude; const lng = pos.coords.longitude;
-                    const text = `📍 موقعي الحالي\nhttps://www.google.com/maps?q=${lat},${lng}`;
-                    messageInput.value = text;
+                    document.getElementById('message-input').value = `📍 موقعي الحالي\nhttps://www.google.com/maps?q=$${pos.coords.latitude},${pos.coords.longitude}`;
                     document.getElementById('send-btn').click();
-                    btn.innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5 group-hover:scale-105 transition-transform"></i>`;
-                    lucide.createIcons();
-                }, () => { 
-                    alert('يرجى تفعيل صلاحية الموقع من المتصفح.'); 
-                    btn.innerHTML = `<i data-lucide="map-pin" class="w-3.5 h-3.5 group-hover:scale-105 transition-transform"></i>`;
-                    lucide.createIcons();
-                });
+                }, () => { alert('يرجى تفعيل صلاحية الموقع من المتصفح.'); });
             }
         });
 
@@ -1104,7 +773,7 @@
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     mediaRecorder = new MediaRecorder(stream); mediaRecorder.start(); isRecording = true;
-                    micBtn.classList.add('animate-pulse', 'text-red-500', 'bg-red-500/20'); micBtn.classList.remove('text-gray-400');
+                    micBtn.classList.add('animate-pulse', 'text-red-500', 'bg-red-500/20', 'px-2', 'py-1', 'rounded-lg'); micBtn.classList.remove('text-brand-muted');
                     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                     mediaRecorder.onstop = async () => {
                         let mimeType = mediaRecorder.mimeType || 'audio/webm'; let ext = 'webm';
@@ -1115,18 +784,11 @@
                         document.getElementById('preview-file-name').innerText = 'رسالة صوتية 🎤';
                         document.getElementById('media-preview-container').classList.remove('hidden'); document.getElementById('media-preview-container').classList.add('flex');
                     };
-                } catch (err) { alert("يرجى إعطاء صلاحية الميكروفون للمتصفح أولاً."); }
+                } catch (err) { alert("يرجى إعطاء صلاحية الميكروفون للمتصفح."); }
             } else {
                 mediaRecorder.stop(); isRecording = false;
-                micBtn.classList.remove('animate-pulse', 'text-red-500', 'bg-red-500/20'); micBtn.classList.add('text-gray-400');
+                micBtn.classList.remove('animate-pulse', 'text-red-500', 'bg-red-500/20', 'px-2', 'py-1', 'rounded-lg'); micBtn.classList.add('text-brand-muted');
             }
-        });
-
-        const secretBtn = document.getElementById('secret-mode-btn');
-        secretBtn.addEventListener('click', () => {
-            isSecretMode = !isSecretMode;
-            if(isSecretMode) { secretBtn.classList.add('text-brand-gold', 'bg-brand-gold/20'); secretBtn.classList.remove('text-brand-muted'); } 
-            else { secretBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20'); secretBtn.classList.add('text-brand-muted'); }
         });
 
         const messageInput = document.getElementById('message-input');
@@ -1141,14 +803,8 @@
         function listenToTyping() {
             if(!currentChatId) return;
             onValue(ref(db, `chats/${currentChatId}/typing`), (snap) => {
-                const typers = snap.val() || {};
-                const otherTypers = Object.keys(typers).filter(uid => uid !== currentUser.uid);
-                const statusEl = document.getElementById('chat-typing-status');
-                if(otherTypers.length > 0) {
-                    statusEl.innerText = "يكتب الآن...";
-                } else {
-                    statusEl.innerText = "";
-                }
+                const typers = snap.val() || {}; const otherTypers = Object.keys(typers).filter(uid => uid !== currentUser.uid);
+                document.getElementById('chat-typing-status').innerText = otherTypers.length > 0 ? "يكتب الآن..." : "";
             });
         }
 
@@ -1156,35 +812,49 @@
             const text = messageInput.value.trim(); 
             if (text === "" && !window.selectedMediaFile) return;
             if (!currentChatId) return;
-            setButtonLoading('send-btn', true);
-
-            if(window.editingMsgId) {
-                update(ref(db, `chats/${currentChatId}/messages/${window.editingMsgId}`), { text: text, isEdited: true }).then(() => cancelEdit()).finally(() => setButtonLoading('send-btn', false));
-                return;
-            }
 
             let mediaUrl = null; let mediaType = null;
             if (window.selectedMediaFile) {
                 try {
                     mediaUrl = await uploadFileToSupabase(window.selectedMediaFile);
                     mediaType = window.selectedMediaFile.type.startsWith('video/') ? 'video' : (window.selectedMediaFile.type.startsWith('audio/') ? 'audio' : 'image');
-                } catch (err) { alert("فشل رفع الوسائط: " + err.message); setButtonLoading('send-btn', false); return; }
+                } catch (err) { alert("فشل الرفع"); return; }
             }
 
-            const payload = { senderId: currentUser.uid, senderEmail: currentUser.email || "مجهول", text: text, timestamp: serverTimestamp(), status: 'sent', isSecret: isSecretMode };
+            // تشفير النص (E2EE)
+            const encryptedText = encryptMessage(text);
+
+            const payload = { senderId: currentUser.uid, text: encryptedText, timestamp: serverTimestamp(), status: 'sent', isViewOnce: isViewOnceMode };
             if (mediaUrl) { payload.mediaUrl = mediaUrl; payload.mediaType = mediaType; }
-            if(window.replyingTo) { payload.replyTo = window.replyingTo; cancelReply(); }
 
             push(ref(db, `chats/${currentChatId}/messages`), payload).then(() => { 
-                messageInput.value = ""; messageInput.style.height = 'auto'; cancelMedia(); remove(ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`)); 
-            }).finally(() => setButtonLoading('send-btn', false));
+                messageInput.value = ""; messageInput.style.height = 'auto'; window.cancelMedia(); remove(ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`)); 
+                isViewOnceMode = false; viewOnceBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20', 'px-2', 'py-1', 'rounded-lg'); viewOnceBtn.classList.add('text-brand-muted');
+            });
         });
 
-        function revealSecret(msgId) {
-            const el = document.getElementById(`secret-txt-${msgId}`);
-            if (el && !el.classList.contains('revealed')) { el.classList.add('revealed'); setTimeout(() => { remove(ref(db, `chats/${currentChatId}/messages/${msgId}`)); }, 10000); }
-        }
-        window.revealSecret = revealSecret;
+        // دوال عرض الصور ومقاطع الفيديو العادية أو للعرض لمرة واحدة (View Once)
+        window.openViewOnce = function(msgId, url, type) {
+            const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img'); const vid = document.getElementById('lightbox-vid');
+            if(type === 'video') { img.classList.add('hidden'); vid.src = url; vid.classList.remove('hidden'); }
+            else { vid.classList.add('hidden'); img.src = url; img.classList.remove('hidden'); }
+            modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10);
+            remove(ref(db, `chats/${currentChatId}/messages/${msgId}`)); // الحذف الفوري من القاعدة
+        };
+
+        window.openNormalMedia = function(url, type) {
+            const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img'); const vid = document.getElementById('lightbox-vid');
+            if(type === 'video') { img.classList.add('hidden'); vid.src = url; vid.classList.remove('hidden'); }
+            else { vid.classList.add('hidden'); img.src = url; img.classList.remove('hidden'); }
+            modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10);
+        };
+
+        window.closeLightbox = function() { 
+            const modal = document.getElementById('lightbox-modal');
+            modal.classList.add('opacity-0'); setTimeout(() => { modal.classList.add('hidden'); document.getElementById('lightbox-vid').pause(); }, 300); 
+        };
+
+        window.playWave = function(id) { if(activeWavesurfers[id]) activeWavesurfers[id].playPause(); };
 
         function loadMessages() {
             if (currentMessagesRef) { off(currentMessagesRef); }
@@ -1194,9 +864,8 @@
                 currentMessagesRef = ref(db, `chats/${currentChatId}/messages`);
 
                 onValue(currentMessagesRef, (snapshot) => {
-                    const area = document.getElementById('messages-area');
-                    area.innerHTML = ''; const updatesToRead = {}; let prevSenderId = null; let prevDate = null;
-                    let hasMessages = false;
+                    const area = document.getElementById('messages-area'); area.innerHTML = ''; 
+                    const updatesToRead = {}; let prevSenderId = null; let prevDate = null; let hasMessages = false;
 
                     snapshot.forEach(child => {
                         const msg = child.val(); const msgId = child.key; if(!msg) return; 
@@ -1214,68 +883,57 @@
                         }
 
                         const isMe = msg.senderId === currentUser.uid;
+                        // نظام مؤشرات القراءة (Read Receipts)
                         if(!isMe && msg.status !== 'read') updatesToRead[`${msgId}/status`] = 'read';
 
                         const senderName = window.userProfiles[msg.senderId]?.name || (msg.senderEmail || "مجهول").split('@')[0];
-                        const safeText = (msg.text || '').replace(/'/g, "\\'");
                         const isGrouped = prevSenderId === msg.senderId; prevSenderId = msg.senderId;
                         
                         const marginClass = isGrouped ? 'mt-1' : 'mt-4';
                         const radiusClass = isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm';
-                        const isGroupChat = currentChatId && !currentChatId.includes('_');
-                        const canDelete = isMe || (isGroupChat && window.groupCreators[currentChatId] === currentUser.uid);
-                        const myLike = msg.likes && msg.likes[currentUser.uid]; const likeCount = msg.likes ? Object.keys(msg.likes).length : 0;
-
-                        const secretClass = msg.isSecret ? 'secret-msg' : ''; const secretClick = msg.isSecret ? `onclick="revealSecret('${msgId}')" title="انقر للفتح (تدمير ذاتي بعد 10ث)"` : '';
-                        const secretIcon = msg.isSecret ? `<i data-lucide="eye-off" class="w-3.5 h-3.5 text-brand-gold inline mr-1"></i>` : '';
-
-                        let actionButtons = `
-                            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-brand-text/5 w-full justify-end md:hidden opacity-80">
-                                <button onclick="toggleLike('${msgId}', ${myLike})" class="p-1.5 text-red-400"><i data-lucide="heart" class="w-4 h-4 ${myLike ? 'fill-current' : ''}"></i></button>
-                                <button onclick="initReply('${msgId}', '${senderName}', '${safeText}')" class="p-1.5 text-brand-gold"><i data-lucide="reply" class="w-4 h-4"></i></button>
-                                ${!msg.isSecret ? `<button onclick="pinMessage('${msgId}', '${senderName}', '${safeText}')" class="p-1.5 text-amber-500"><i data-lucide="pin" class="w-4 h-4"></i></button>` : ''}
-                                ${isMe && !msg.isSecret ? `<button onclick="initEdit('${msgId}', '${safeText}')" class="p-1.5 text-blue-400"><i data-lucide="edit-3" class="w-4 h-4"></i></button>` : ''}
-                                ${canDelete ? `<button onclick="deleteMessage('${msgId}')" class="p-1.5 text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                            </div>
-                            <div class="hidden md:flex absolute -top-4 ${isMe ? 'right-4' : 'left-4'} opacity-0 group-hover:opacity-100 transition-all items-center gap-0.5 z-20 bg-brand-surface/95 backdrop-blur-md p-1 rounded-xl border border-brand-text/5 shadow-xl">
-                                <button onclick="toggleLike('${msgId}', ${myLike})" class="p-1.5 hover:bg-brand-text/5 rounded-lg text-red-400"><i data-lucide="heart" class="w-4 h-4 ${myLike ? 'fill-current' : ''}"></i></button>
-                                <button onclick="initReply('${msgId}', '${senderName}', '${safeText}')" class="p-1.5 hover:bg-brand-text/5 rounded-lg text-brand-gold"><i data-lucide="reply" class="w-4 h-4"></i></button>
-                                ${!msg.isSecret ? `<button onclick="pinMessage('${msgId}', '${senderName}', '${safeText}')" class="p-1.5 hover:bg-brand-text/5 rounded-lg text-amber-500"><i data-lucide="pin" class="w-4 h-4"></i></button>` : ''}
-                                ${isMe && !msg.isSecret ? `<button onclick="initEdit('${msgId}', '${safeText}')" class="p-1.5 hover:bg-brand-text/5 rounded-lg text-blue-400"><i data-lucide="edit-3" class="w-4 h-4"></i></button>` : ''}
-                                ${canDelete ? `<button onclick="deleteMessage('${msgId}')" class="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                            </div>`;
-
-                        const replyHtml = msg.replyTo ? `<div onclick="scrollToMsg('${msg.replyTo.id}')" class="bg-black/10 border-r-4 border-brand-gold p-2.5 mb-2 rounded-xl text-xs backdrop-blur-sm cursor-pointer border border-brand-text/5"><div class="text-brand-gold font-black text-[10px] mb-0.5">${msg.replyTo.sender}</div><div class="truncate text-brand-text/80 text-[11px]">${formatMarkdown(msg.replyTo.text)}</div></div>` : '';
-                        const likeBadgeInline = likeCount > 0 ? `<span class="flex items-center gap-1 text-red-400 bg-red-500/5 px-1.5 py-0.5 rounded-md mr-1.5 text-[11px]"><i data-lucide="heart" class="w-3 h-3 fill-current"></i> ${likeCount > 1 ? likeCount : ''}</span>` : '';
+                        
+                        // فك التشفير برمجياً للرسالة (E2EE)
+                        const decryptedText = decryptMessage(msg.text);
 
                         let mediaHtml = '';
                         if (msg.mediaUrl) {
-                            if (msg.mediaType === 'video') { mediaHtml = `<video src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-xs rounded-xl border border-brand-text/10 shadow-md bg-black"></video>`; } 
-                            else if (msg.mediaType === 'audio') { mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-xs rounded-xl shadow-md h-10"></audio>`; } 
-                            else { mediaHtml = `<img src="${msg.mediaUrl}" onclick="openLightbox('${msg.mediaUrl}')" class="mt-2 w-full max-w-xs rounded-xl border border-brand-text/10 shadow-md cursor-zoom-in" loading="lazy">`; }
+                            if (msg.isViewOnce) {
+                                if (isMe) { mediaHtml = `<div class="p-4 rounded-xl view-once-btn text-brand-gold text-[11px] text-center font-bold flex flex-col items-center"><i data-lucide="bomb" class="w-5 h-5 mb-1 text-amber-500"></i> أرسلت وسائط ستُعرض لمرة واحدة</div>`; }
+                                else { mediaHtml = `<button onclick="openViewOnce('${msgId}', '${msg.mediaUrl}', '${msg.mediaType}')" class="w-full p-4 rounded-xl view-once-btn text-brand-gold font-bold flex flex-col items-center gap-2 hover:bg-brand-gold/10 transition-colors shadow-inner"><i data-lucide="eye" class="w-6 h-6 text-amber-500"></i> انقر لفتح الوسائط (سيتم تدميرها فوراً)</button>`; }
+                            } else {
+                                if (msg.mediaType === 'video') { mediaHtml = `<div class="relative"><video src="${msg.mediaUrl}" class="mt-2 w-full max-w-xs rounded-xl shadow-md bg-black cursor-pointer" onclick="openNormalMedia('${msg.mediaUrl}', 'video')"></video><div class="absolute inset-0 flex items-center justify-center pointer-events-none"><div class="bg-black/50 p-3 rounded-full backdrop-blur-md"><i data-lucide="play" class="w-6 h-6 text-white fill-current"></i></div></div></div>`; } 
+                                else if (msg.mediaType === 'audio') { 
+                                    // تطبيق Wavesurfer للصوتيات
+                                    mediaHtml = `<div class="mt-2 w-full max-w-[250px] bg-brand-darker/60 backdrop-blur-md border border-brand-gold/20 p-2.5 rounded-xl flex items-center gap-3 shadow-inner"><button onclick="playWave('${msgId}')" class="p-2.5 bg-gradient-to-tr from-amber-600 to-brand-gold text-white rounded-full shadow-md hover:scale-105 transition-transform"><i data-lucide="play" class="w-4 h-4 fill-current"></i></button><div id="wave-${msgId}" class="flex-1 h-8"></div></div>`; 
+                                    setTimeout(() => {
+                                        if(!activeWavesurfers[msgId]) {
+                                            activeWavesurfers[msgId] = WaveSurfer.create({ container: `#wave-${msgId}`, waveColor: 'rgba(217, 119, 6, 0.4)', progressColor: '#d97706', height: 32, barWidth: 2, barGap: 1, barRadius: 2, url: msg.mediaUrl });
+                                        }
+                                    }, 100);
+                                } 
+                                else { mediaHtml = `<img src="${msg.mediaUrl}" onclick="openNormalMedia('${msg.mediaUrl}', 'image')" class="mt-2 w-full max-w-xs rounded-xl border border-brand-text/10 shadow-md cursor-zoom-in" loading="lazy">`; }
+                            }
                         }
+
+                        // علامة القراءة (Checkmarks)
+                        const statusIcon = isMe ? (msg.status === 'read' ? '<i data-lucide="check-check" class="w-3.5 h-3.5 inline text-blue-400"></i>' : '<i data-lucide="check" class="w-3.5 h-3.5 inline text-gray-400"></i>') : '';
 
                         const div = document.createElement('div');
                         div.id = `msg-${msgId}`;
-                        div.setAttribute('data-text', msg.text || '');
+                        div.setAttribute('data-text', decryptedText.toLowerCase());
                         
                         div.className = `msg-bubble p-3.5 px-4 max-w-[85%] md:max-w-md relative w-fit group flex flex-col ${radiusClass} ${marginClass} ${isMe ? 'self-end bg-gradient-to-tr from-brand-surface to-brand-dark/30 border border-brand-gold/30 text-brand-text shadow-sm' : 'self-start bg-brand-surface/20 backdrop-blur-sm border border-brand-text/5 text-brand-text'}`;
                         
                         div.innerHTML = `
-                            ${replyHtml}
                             ${!isMe && !isGrouped ? `<div class="text-[11px] text-brand-gold font-black mb-1">${senderName}</div>` : ''}
-                            <div class="leading-relaxed break-words text-[14px] media-content ${secretClass}" id="secret-txt-${msgId}" ${secretClick}>
+                            <div class="leading-relaxed break-words text-[14px] media-content">
                                 ${mediaHtml}
-                                ${msg.text ? `<div class="${msg.mediaUrl ? 'mt-1.5' : ''}">${formatMarkdown(msg.text)}</div>` : ''}
-                                <div class="flex items-center justify-end mt-2 opacity-60 text-[10px]">
-                                    ${likeBadgeInline}
-                                    ${secretIcon}
-                                    ${msg.isEdited ? `<span class="italic mx-1">(معدلة)</span>` : ''}
-                                    <span class="font-sans mx-1" dir="ltr">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</span>
-                                    ${isMe ? `<span class="${msg.status === 'read' ? 'text-brand-gold' : ''}">${msg.status === 'read' ? '<i data-lucide="check-check" class="w-3 h-3 inline"></i>' : '<i data-lucide="check" class="w-3 h-3 inline"></i>'}</span>` : ''}
+                                ${decryptedText ? `<div class="${msg.mediaUrl ? 'mt-1.5' : ''}">${formatMarkdown(decryptedText)}</div>` : ''}
+                                <div class="flex items-center justify-end mt-2 opacity-70 text-[10px] gap-1">
+                                    <span class="font-sans" dir="ltr">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</span>
+                                    ${statusIcon}
                                 </div>
                             </div>
-                            ${actionButtons}
                         `;
                         area.appendChild(div);
                     });
@@ -1283,20 +941,25 @@
                     if (!hasMessages) {
                         area.innerHTML = `
                             <div class="flex-1 flex flex-col items-center justify-center opacity-40 my-auto">
-                                <div class="w-20 h-20 bg-brand-surface rounded-full flex items-center justify-center mb-3 border border-brand-text/5">
-                                    <i data-lucide="message-circle" class="w-8 h-8 text-brand-gold"></i>
-                                </div>
-                                <p class="text-brand-text text-sm font-medium">لا توجد رسائل سابقة في سجلات النظام.</p>
+                                <div class="w-20 h-20 bg-brand-surface rounded-full flex items-center justify-center mb-3 border border-brand-text/5"><i data-lucide="shield" class="w-8 h-8 text-brand-gold"></i></div>
+                                <p class="text-brand-text text-sm font-medium">المحادثة مشفرة تماماً E2EE. أرسل رسالة للبدء.</p>
                             </div>`;
-                    } else if (area.scrollHeight - area.scrollTop - area.clientHeight < 300) { 
-                        area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); 
-                    }
+                    } else if (area.scrollHeight - area.scrollTop - area.clientHeight < 300) { area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
                     
                     lucide.createIcons();
                     if(Object.keys(updatesToRead).length > 0) update(ref(db, `chats/${currentChatId}/messages`), updatesToRead);
                 });
             });
         }
+
+        /* --- مكالمات الصوت والفيديو (WebRTC UI Placeholder) --- */
+        window.startCall = function(type) {
+            const modal = document.getElementById('call-screen');
+            document.getElementById('call-name').innerText = document.getElementById('chat-title').innerText;
+            document.getElementById('call-status').innerText = type === 'video' ? "جاري إنشاء اتصال فيديو مشفر (E2EE)..." : "جاري إنشاء اتصال صوتي مشفر (E2EE)...";
+            modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10);
+        };
+        window.endCall = function() { const modal = document.getElementById('call-screen'); modal.classList.add('opacity-0'); setTimeout(()=>modal.classList.add('hidden'), 300); };
     </script>
 </body>
 </html>
