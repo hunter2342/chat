@@ -19,11 +19,7 @@
     <script>
         if (localStorage.getItem('theme') === 'light') { document.documentElement.classList.remove('dark'); } 
         else { document.documentElement.classList.add('dark'); }
-        
-        // تسجيل عامل الخدمة لـ PWA
-        if ('serviceWorker' in navigator) { 
-            navigator.serviceWorker.register('sw.js').catch(err => console.log('PWA SW Registration failed:', err));
-        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(err => console.log('PWA SW Registration failed:', err)); }
     </script>
 
     <script>
@@ -32,15 +28,7 @@
             theme: {
                 extend: {
                     colors: { 
-                        brand: { 
-                            dark: 'rgb(var(--color-dark) / <alpha-value>)', 
-                            darker: 'rgb(var(--color-darker) / <alpha-value>)', 
-                            emerald: '#059669', 
-                            gold: '#d97706', 
-                            surface: 'rgb(var(--color-surface) / <alpha-value>)', 
-                            text: 'rgb(var(--color-text) / <alpha-value>)', 
-                            muted: 'rgb(var(--color-text) / 0.5)' 
-                        } 
+                        brand: { dark: 'rgb(var(--color-dark) / <alpha-value>)', darker: 'rgb(var(--color-darker) / <alpha-value>)', emerald: '#059669', gold: '#d97706', surface: 'rgb(var(--color-surface) / <alpha-value>)', text: 'rgb(var(--color-text) / <alpha-value>)', muted: 'rgb(var(--color-text) / 0.5)' } 
                     },
                     animation: { 'fade-in-up': 'fadeInUp 0.3s ease-out forwards', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
                     keyframes: { fadeInUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
@@ -61,29 +49,27 @@
         * { -webkit-tap-highlight-color: transparent; outline: none; }
         body { height: 100dvh; height: -webkit-fill-available; transition: background-color 0.4s ease; background-color: rgb(var(--color-darker)); position: relative; }
         
-        /* طبقة الجسيمات التفاعلية */
         #particles-js { position: absolute; top:0; left:0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
         .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .tab-content.active { display: flex; flex-direction: column; height: 100%; opacity: 1; animation: fadeInUp 0.4s ease forwards;}
         
-        /* تأثير الزجاج (Glassmorphism) */
         .glass-panel { background: rgba(var(--color-surface) / 0.55); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); position: relative; z-index: 10;}
         html.dark .glass-panel { background: rgba(18, 24, 38, 0.65); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         
-        .msg-bubble { box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.03); }
+        .msg-bubble { box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.03); user-select: none; -webkit-user-select: none; }
         .msg-bubble:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
         
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0.5rem); }
         .pt-safe { padding-top: env(safe-area-inset-top, 1rem); }
         
         .media-content img, .media-content video { max-height: 280px; border-radius: 1rem; object-fit: cover; border: 1px solid rgba(var(--color-text) / 0.1); }
-        
-        /* تصميم زر العرض لمرة واحدة */
         .view-once-btn { background: repeating-linear-gradient(45deg, rgba(217,119,6,0.05), rgba(217,119,6,0.05) 10px, rgba(217,119,6,0.1) 10px, rgba(217,119,6,0.1) 20px); border: 1px dashed rgba(217,119,6,0.5); }
-        
         .toggle-checkbox:checked { right: 0; border-color: #d97706; }
         .toggle-checkbox:checked + .toggle-label { background-color: #d97706; }
+        
+        /* تأثير النسخ والضغط */
+        .context-active { transform: scale(0.98); opacity: 0.8; }
     </style>
 </head>
 <body class="text-brand-text h-[100dvh] overflow-hidden font-sans antialiased flex justify-center bg-brand-darker">
@@ -93,36 +79,13 @@
     <div id="auth-screen" class="absolute inset-0 z-[100] flex items-center justify-center bg-brand-darker/90 backdrop-blur-xl p-4 transition-opacity duration-500">
         <div class="glass-panel p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md relative overflow-hidden">
             <div class="absolute -top-24 -right-24 w-48 h-48 bg-brand-gold rounded-full blur-[80px] opacity-10"></div>
-            
-            <div class="flex justify-center mb-6 relative z-10">
-                <div class="w-16 h-16 bg-brand-darker rounded-2xl flex items-center justify-center border border-brand-gold shadow-[0_0_20px_rgba(217,119,6,0.25)] transform rotate-3 hover:rotate-0 transition-transform">
-                    <i data-lucide="zap" class="w-8 h-8 text-brand-gold fill-current"></i>
-                </div>
-            </div>
-
-            <div class="flex justify-center gap-6 mb-8 border-b border-brand-text/10 relative z-10">
-                <button id="tab-login" onclick="switchAuthMode('login')" class="pb-3 text-brand-gold font-black border-b-2 border-brand-gold transition-colors text-lg tracking-wide">دخول</button>
-                <button id="tab-signup" onclick="switchAuthMode('signup')" class="pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide">تسجيل</button>
-            </div>
-
+            <div class="flex justify-center mb-6 relative z-10"><div class="w-16 h-16 bg-brand-darker rounded-2xl flex items-center justify-center border border-brand-gold shadow-[0_0_20px_rgba(217,119,6,0.25)] transform rotate-3 hover:rotate-0 transition-transform"><i data-lucide="zap" class="w-8 h-8 text-brand-gold fill-current"></i></div></div>
+            <div class="flex justify-center gap-6 mb-8 border-b border-brand-text/10 relative z-10"><button id="tab-login" onclick="switchAuthMode('login')" class="pb-3 text-brand-gold font-black border-b-2 border-brand-gold transition-colors text-lg tracking-wide">دخول</button><button id="tab-signup" onclick="switchAuthMode('signup')" class="pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide">تسجيل</button></div>
             <div class="flex flex-col gap-4 relative z-10">
-                <div id="signup-fields" class="hidden flex-col gap-4 animate-fade-in-up">
-                    <div class="flex justify-center mb-2">
-                        <div class="relative w-24 h-24 rounded-full bg-brand-dark/80 border-2 border-dashed border-brand-gold flex items-center justify-center cursor-pointer group hover:bg-brand-surface transition-colors overflow-hidden shadow-inner" onclick="document.getElementById('auth-avatar-input').click()">
-                            <img id="auth-avatar-preview" class="w-full h-full object-cover hidden">
-                            <i id="auth-avatar-icon" data-lucide="camera" class="w-7 h-7 text-brand-gold group-hover:scale-110 transition-transform absolute"></i>
-                        </div>
-                        <input type="file" id="auth-avatar-input" accept="image/*" class="hidden">
-                    </div>
-                    <input type="text" id="auth-name" placeholder="الاسم المستعار" class="px-5 py-4 bg-brand-dark/30 rounded-2xl text-brand-text focus:ring-2 focus:ring-brand-gold border border-brand-text/10 w-full outline-none transition-shadow placeholder-brand-muted">
-                </div>
-
+                <div id="signup-fields" class="hidden flex-col gap-4 animate-fade-in-up"><div class="flex justify-center mb-2"><div class="relative w-24 h-24 rounded-full bg-brand-dark/80 border-2 border-dashed border-brand-gold flex items-center justify-center cursor-pointer group hover:bg-brand-surface transition-colors overflow-hidden shadow-inner" onclick="document.getElementById('auth-avatar-input').click()"><img id="auth-avatar-preview" class="w-full h-full object-cover hidden"><i id="auth-avatar-icon" data-lucide="camera" class="w-7 h-7 text-brand-gold group-hover:scale-110 transition-transform absolute"></i></div><input type="file" id="auth-avatar-input" accept="image/*" class="hidden"></div><input type="text" id="auth-name" placeholder="الاسم المستعار" class="px-5 py-4 bg-brand-dark/30 rounded-2xl text-brand-text focus:ring-2 focus:ring-brand-gold border border-brand-text/10 w-full outline-none transition-shadow placeholder-brand-muted"></div>
                 <input type="email" id="email" placeholder="البريد الإلكتروني" class="px-5 py-4 bg-brand-dark/30 rounded-2xl text-brand-text focus:ring-2 focus:ring-brand-gold border border-brand-text/10 w-full outline-none transition-shadow placeholder-brand-muted">
                 <input type="password" id="password" placeholder="كلمة المرور" class="px-5 py-4 bg-brand-dark/30 rounded-2xl text-brand-text focus:ring-2 focus:ring-brand-gold border border-brand-text/10 w-full outline-none transition-shadow placeholder-brand-muted">
-                
-                <button id="auth-action-btn" class="bg-gradient-to-r from-amber-600 to-brand-gold text-white p-4 rounded-2xl font-black text-lg transition-all active:scale-95 flex justify-center items-center h-14 shadow-[0_10px_25px_rgba(217,119,6,0.25)] hover:shadow-[0_10px_30px_rgba(217,119,6,0.4)] mt-4">
-                    <span id="auth-btn-text">دخول للنظام</span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i>
-                </button>
+                <button id="auth-action-btn" class="bg-gradient-to-r from-amber-600 to-brand-gold text-white p-4 rounded-2xl font-black text-lg transition-all active:scale-95 flex justify-center items-center h-14 shadow-[0_10px_25px_rgba(217,119,6,0.25)] hover:shadow-[0_10px_30px_rgba(217,119,6,0.4)] mt-4"><span id="auth-btn-text">دخول للنظام</span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i></button>
                 <p id="auth-error" class="text-red-500 text-sm text-center hidden bg-red-500/10 p-3 rounded-xl border border-red-500/30"></p>
             </div>
         </div>
@@ -132,81 +95,29 @@
         <main class="flex-1 flex flex-col h-full overflow-hidden w-full md:order-2 relative z-10">
             <header class="h-20 px-6 flex justify-between items-center bg-brand-darker/40 backdrop-blur-md border-b border-brand-text/5 flex-shrink-0 z-20 shadow-sm">
                 <h2 id="main-header-title" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-amber-400 tracking-wide">المحادثات</h2>
-                <div class="flex items-center gap-3 bg-brand-surface/30 px-4 py-2 rounded-full border border-brand-text/5">
-                    <div id="global-connection-status" class="w-2.5 h-2.5 bg-amber-500 rounded-full shadow-[0_0_10px_#d97706]"></div>
-                    <span id="global-connection-text" class="text-xs text-brand-muted font-bold hidden md:block">متصل ومزامن</span>
-                </div>
+                <div class="flex items-center gap-3 bg-brand-surface/30 px-4 py-2 rounded-full border border-brand-text/5"><div id="global-connection-status" class="w-2.5 h-2.5 bg-amber-500 rounded-full shadow-[0_0_10px_#d97706]"></div><span id="global-connection-text" class="text-xs text-brand-muted font-bold hidden md:block">متصل ومزامن</span></div>
             </header>
 
             <div class="flex-1 overflow-y-auto no-scrollbar relative">
                 <div id="tab-users" class="tab-content active p-4 md:p-6 pb-24 md:pb-6 gap-3">
-                    <div class="flex items-center gap-3 bg-brand-surface/20 p-4 rounded-2xl border border-brand-text/5 shadow-inner sticky top-0 z-10 backdrop-blur-xl transition-all focus-within:border-brand-gold">
-                        <i data-lucide="search" class="w-5 h-5 text-brand-muted"></i>
-                        <input type="text" id="contact-search-input" placeholder="ابحث في جهات الاتصال..." class="flex-1 bg-transparent border-none text-brand-text outline-none font-medium placeholder-brand-muted">
-                    </div>
+                    <div class="flex items-center gap-3 bg-brand-surface/20 p-4 rounded-2xl border border-brand-text/5 shadow-inner sticky top-0 z-10 backdrop-blur-xl transition-all focus-within:border-brand-gold"><i data-lucide="search" class="w-5 h-5 text-brand-muted"></i><input type="text" id="contact-search-input" placeholder="ابحث في جهات الاتصال..." class="flex-1 bg-transparent border-none text-brand-text outline-none font-medium placeholder-brand-muted"></div>
                     <div id="users-list" class="flex flex-col gap-2.5 mt-3"></div>
                 </div>
 
                 <div id="tab-groups" class="tab-content p-4 md:p-6 pb-24 md:pb-6 gap-4">
-                    <div class="flex gap-3 mb-2 sticky top-0 bg-brand-surface/20 backdrop-blur-xl p-4 rounded-2xl z-10 border border-brand-text/5 shadow-inner focus-within:border-brand-gold transition-colors">
-                        <input type="text" id="new-group-name" placeholder="اسم المجموعة الجديدة..." class="flex-1 bg-transparent text-brand-text outline-none font-medium px-2 placeholder-brand-muted">
-                        <button id="create-group-btn" class="bg-brand-gold text-white px-6 py-2 rounded-xl font-bold flex items-center justify-center min-w-[56px] hover:bg-amber-600 transition-colors shadow-md active:scale-95">
-                            <span><i data-lucide="plus" class="w-6 h-6"></i></span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i>
-                        </button>
-                    </div>
+                    <div class="flex gap-3 mb-2 sticky top-0 bg-brand-surface/20 backdrop-blur-xl p-4 rounded-2xl z-10 border border-brand-text/5 shadow-inner focus-within:border-brand-gold transition-colors"><input type="text" id="new-group-name" placeholder="اسم المجموعة الجديدة..." class="flex-1 bg-transparent text-brand-text outline-none font-medium px-2 placeholder-brand-muted"><button id="create-group-btn" class="bg-brand-gold text-white px-6 py-2 rounded-xl font-bold flex items-center justify-center min-w-[56px] hover:bg-amber-600 transition-colors shadow-md active:scale-95"><span><i data-lucide="plus" class="w-6 h-6"></i></span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i></button></div>
                     <div id="groups-list" class="flex flex-col gap-2.5"></div>
                 </div>
                 
                 <div id="tab-stories" class="tab-content p-0 pb-24 md:pb-6 gap-0 w-full max-w-3xl mx-auto">
-                    <div class="p-5 pt-6 bg-brand-surface/10 md:rounded-3xl border-b md:border border-brand-text/5 shadow-sm md:mt-4 md:mx-4 backdrop-blur-md">
-                        <div class="flex gap-5 overflow-x-auto no-scrollbar pb-2 items-start" id="stories-avatars-list"></div>
-                    </div>
-                    <div class="p-5 mt-2">
-                        <h4 class="text-xs font-black text-brand-gold mb-4 px-2 uppercase tracking-widest">التحديثات الأخيرة</h4>
-                        <div class="flex flex-col gap-2.5" id="stories-vertical-list"></div>
-                    </div>
+                    <div class="p-5 pt-6 bg-brand-surface/10 md:rounded-3xl border-b md:border border-brand-text/5 shadow-sm md:mt-4 md:mx-4 backdrop-blur-md"><div class="flex gap-5 overflow-x-auto no-scrollbar pb-2 items-start" id="stories-avatars-list"></div></div>
+                    <div class="p-5 mt-2"><h4 class="text-xs font-black text-brand-gold mb-4 px-2 uppercase tracking-widest">التحديثات الأخيرة</h4><div class="flex flex-col gap-2.5" id="stories-vertical-list"></div></div>
                 </div>
                 
                 <div id="tab-settings" class="tab-content p-6 pb-32 pt-8 gap-4 w-full max-w-md mx-auto overflow-y-auto no-scrollbar">
-                    <div class="relative w-32 h-32 mx-auto cursor-pointer group hover:scale-105 transition-transform shrink-0" onclick="document.getElementById('settings-avatar-input').click()">
-                        <div id="settings-avatar-container" class="w-full h-full bg-gradient-to-tr from-brand-gold to-brand-darker rounded-[2.5rem] flex items-center justify-center shadow-xl border-2 border-brand-gold/20 overflow-hidden relative">
-                            <img id="settings-avatar-img" class="w-full h-full object-cover hidden">
-                            <i id="settings-avatar-icon" data-lucide="user" class="w-14 h-14 text-white"></i>
-                        </div>
-                        <div class="absolute inset-0 bg-black/40 rounded-[2.5rem] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
-                            <i data-lucide="camera" class="w-8 h-8 text-white"></i>
-                        </div>
-                        <input type="file" id="settings-avatar-input" accept="image/*" class="hidden">
-                    </div>
-
-                    <div class="w-full flex flex-col gap-4 mt-4 shrink-0">
-                        <div class="relative">
-                            <label class="absolute -top-2 right-4 bg-brand-dark px-2 text-[10px] text-brand-gold font-bold z-10 rounded-md">الاسم المستعار</label>
-                            <input type="text" id="profile-name" class="w-full bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 text-brand-text outline-none focus:border-brand-gold transition-colors relative z-0 font-medium">
-                        </div>
-                        <div class="relative">
-                            <label class="absolute -top-2 right-4 bg-brand-dark px-2 text-[10px] text-brand-gold font-bold z-10 rounded-md">الحالة المكتوبة</label>
-                            <textarea id="profile-bio" class="w-full bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 text-brand-text outline-none focus:border-brand-gold h-24 resize-none transition-colors relative z-0 font-medium"></textarea>
-                        </div>
-                        
-                        <div class="flex items-center justify-between p-4 bg-brand-surface/20 rounded-xl border border-brand-text/5">
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="moon" class="w-5 h-5 text-brand-gold"></i><span class="font-bold text-brand-text text-sm">الوضع المظلم</span>
-                            </div>
-                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" id="theme-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 z-10" onchange="toggleTheme()"/>
-                                <label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-400 dark:bg-gray-600 cursor-pointer transition-colors duration-300"></label>
-                            </div>
-                        </div>
-
-                        <button id="save-profile-btn" class="bg-gradient-to-r from-amber-600 to-brand-gold text-white p-4 rounded-xl font-black flex justify-center items-center h-14 hover:from-amber-700 hover:to-amber-600 shadow-md transition-all active:scale-95 mt-2">
-                            <span>حفظ التعديلات</span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i>
-                        </button>
-                    </div>
-                    
-                    <button id="logout-btn" class="mt-4 bg-red-500/10 text-red-500 border border-red-500/20 px-10 py-4 rounded-xl font-bold w-full hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95 shrink-0 text-sm">
-                        <i data-lucide="log-out" class="w-4 h-4"></i> تسجيل الخروج
-                    </button>
+                    <div class="relative w-32 h-32 mx-auto cursor-pointer group hover:scale-105 transition-transform shrink-0" onclick="document.getElementById('settings-avatar-input').click()"><div id="settings-avatar-container" class="w-full h-full bg-gradient-to-tr from-brand-gold to-brand-darker rounded-[2.5rem] flex items-center justify-center shadow-xl border-2 border-brand-gold/20 overflow-hidden relative"><img id="settings-avatar-img" class="w-full h-full object-cover hidden"><i id="settings-avatar-icon" data-lucide="user" class="w-14 h-14 text-white"></i></div><div class="absolute inset-0 bg-black/40 rounded-[2.5rem] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"><i data-lucide="camera" class="w-8 h-8 text-white"></i></div><input type="file" id="settings-avatar-input" accept="image/*" class="hidden"></div>
+                    <div class="w-full flex flex-col gap-4 mt-4 shrink-0"><div class="relative"><label class="absolute -top-2 right-4 bg-brand-dark px-2 text-[10px] text-brand-gold font-bold z-10 rounded-md">الاسم المستعار</label><input type="text" id="profile-name" class="w-full bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 text-brand-text outline-none focus:border-brand-gold transition-colors relative z-0 font-medium"></div><div class="relative"><label class="absolute -top-2 right-4 bg-brand-dark px-2 text-[10px] text-brand-gold font-bold z-10 rounded-md">الحالة المكتوبة</label><textarea id="profile-bio" class="w-full bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 text-brand-text outline-none focus:border-brand-gold h-24 resize-none transition-colors relative z-0 font-medium"></textarea></div><div class="flex items-center justify-between p-4 bg-brand-surface/20 rounded-xl border border-brand-text/5"><div class="flex items-center gap-3"><i data-lucide="moon" class="w-5 h-5 text-brand-gold"></i><span class="font-bold text-brand-text text-sm">الوضع المظلم</span></div><div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" id="theme-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 z-10" onchange="toggleTheme()"/><label for="theme-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-400 dark:bg-gray-600 cursor-pointer transition-colors duration-300"></label></div></div><button id="save-profile-btn" class="bg-gradient-to-r from-amber-600 to-brand-gold text-white p-4 rounded-xl font-black flex justify-center items-center h-14 hover:from-amber-700 hover:to-amber-600 shadow-md transition-all active:scale-95 mt-2"><span>حفظ التعديلات</span><i data-lucide="loader-2" class="w-6 h-6 animate-spin hidden"></i></button></div>
+                    <button id="logout-btn" class="mt-4 bg-red-500/10 text-red-500 border border-red-500/20 px-10 py-4 rounded-xl font-bold w-full hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-3 active:scale-95 shrink-0 text-sm"><i data-lucide="log-out" class="w-4 h-4"></i> تسجيل الخروج</button>
                 </div>
             </div>
         </main>
@@ -225,76 +136,99 @@
         
         <aside id="chat-sidebar" class="absolute top-0 bottom-0 right-0 w-72 md:w-80 bg-brand-darker/95 backdrop-blur-3xl border-l border-brand-text/5 z-[70] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
             <div class="p-5 pt-safe border-b border-brand-text/5 flex justify-between items-center bg-brand-surface/10">
-                <h3 class="text-brand-gold font-bold text-base">Security & Privacy</h3>
+                <h3 class="text-brand-gold font-bold text-base" id="sidebar-header-title">معلومات المحادثة</h3>
                 <button onclick="toggleSidebar()" class="text-brand-muted hover:text-brand-text bg-brand-surface/40 p-2 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <div class="p-5 flex flex-col gap-3 overflow-y-auto no-scrollbar flex-1">
+            <div class="p-5 flex flex-col gap-3 overflow-y-auto no-scrollbar flex-1" id="sidebar-content">
                 <div class="flex flex-col items-center gap-3 pb-6 border-b border-brand-text/5 mb-2 relative mt-2">
-                    <div id="sidebar-user-avatar" class="w-24 h-24 bg-gradient-to-tr from-brand-gold to-brand-dark rounded-[1.75rem] flex items-center justify-center text-4xl font-black text-white shadow-lg overflow-hidden">M</div>
+                    <div id="sidebar-user-avatar" class="w-24 h-24 bg-gradient-to-tr from-brand-gold to-brand-dark rounded-[1.75rem] flex items-center justify-center text-4xl font-black text-white shadow-lg overflow-hidden"></div>
                     <div id="sidebar-user-status-dot" class="absolute bottom-24 right-16 w-5 h-5 bg-amber-500 border-4 border-brand-darker rounded-full hidden shadow-md"></div>
-                    <h4 id="sidebar-user-name" class="font-black text-brand-text text-xl mt-2 text-center px-2">الاسم</h4>
-                    <p id="sidebar-user-bio" class="text-xs text-brand-gold font-semibold text-center px-3 bg-brand-gold/10 py-1.5 rounded-lg mt-0.5">متاح</p>
-                    <p id="sidebar-user-lastseen" class="text-[10px] text-brand-muted font-bold text-center mt-0.5"></p>
+                    <h4 id="sidebar-user-name" class="font-black text-brand-text text-xl mt-2 text-center px-2"></h4>
+                    <p id="sidebar-user-bio" class="text-xs text-brand-gold font-semibold text-center px-3 bg-brand-gold/10 py-1.5 rounded-lg mt-0.5"></p>
                 </div>
                 
-                <div class="bg-brand-surface/20 p-3.5 rounded-xl border border-brand-text/5 text-xs flex flex-col gap-1">
+                <div id="group-members-container" class="hidden flex-col gap-2 mb-4">
+                    <h5 class="text-xs font-black text-brand-muted uppercase tracking-wider mb-1">أعضاء المجموعة <span id="group-members-count"></span></h5>
+                    <div id="group-members-list" class="flex flex-col gap-2"></div>
+                </div>
+
+                <div class="bg-brand-surface/20 p-3.5 rounded-xl border border-brand-text/5 text-xs flex flex-col gap-1 mb-auto">
                     <span class="font-black text-brand-gold mb-1 flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> تشفير E2EE</span>
                     <p class="text-brand-muted text-[11px] leading-relaxed">الرسائل والمكالمات في هذه الدردشة محمية بالكامل بتشفير متطور (AES-GCM).</p>
                 </div>
 
-                <button onclick="toggleSearch()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="search" class="w-4 h-4 text-brand-gold"></i> البحث</button>
+                <button onclick="toggleSearch()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5 mt-4"><i data-lucide="search" class="w-4 h-4 text-brand-gold"></i> البحث</button>
                 <button onclick="clearChat()" class="flex items-center gap-3 p-3.5 hover:bg-brand-surface/40 rounded-xl text-brand-text text-sm font-medium transition-colors border border-transparent hover:border-brand-text/5"><i data-lucide="trash-2" class="w-4 h-4 text-orange-400"></i> مسح السجل</button>
-                <button onclick="blockUser()" class="flex items-center gap-3 p-3.5 bg-red-500/10 hover:bg-red-500/20 rounded-xl text-red-500 text-sm font-bold transition-colors mt-auto"><i data-lucide="ban" class="w-4 h-4"></i> حظر جهة الاتصال</button>
+                <button id="block-user-btn" onclick="blockUser()" class="flex items-center gap-3 p-3.5 bg-red-500/10 hover:bg-red-500/20 rounded-xl text-red-500 text-sm font-bold transition-colors"><i data-lucide="ban" class="w-4 h-4"></i> حظر جهة الاتصال</button>
             </div>
         </aside>
 
         <header class="h-20 px-4 flex items-center justify-between bg-brand-darker/70 border-b border-brand-text/5 z-20 flex-shrink-0 backdrop-blur-xl">
             <div class="flex items-center gap-3 pt-safe cursor-pointer group" onclick="toggleSidebar()">
                 <button id="close-chat-btn" class="p-2 bg-brand-surface/40 border border-brand-text/5 text-brand-text hover:text-brand-gold rounded-xl shadow-sm" onclick="event.stopPropagation()"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
-                <div class="relative transition-transform group-hover:scale-105">
-                    <div id="chat-header-avatar" class="w-11 h-11 bg-gradient-to-tr from-brand-dark to-brand-surface rounded-xl flex items-center justify-center shadow-md overflow-hidden border border-brand-text/5"><i data-lucide="hash" class="w-5 h-5 text-brand-gold"></i></div>
-                    <div id="chat-header-status-dot" class="absolute -bottom-1 -right-1 w-3 h-3 bg-amber-500 border-2 border-brand-darker rounded-full hidden"></div>
-                </div>
-                <div class="flex flex-col"><h2 id="chat-title" class="text-base md:text-lg font-black text-brand-text">الدردشة</h2><span id="chat-typing-status" class="text-[11px] font-bold text-brand-gold h-3.5 mt-0.5"></span></div>
+                <div class="relative transition-transform group-hover:scale-105"><div id="chat-header-avatar" class="w-11 h-11 bg-gradient-to-tr from-brand-dark to-brand-surface rounded-xl flex items-center justify-center shadow-md overflow-hidden border border-brand-text/5"></div></div>
+                <div class="flex flex-col"><h2 id="chat-title" class="text-base md:text-lg font-black text-brand-text"></h2><span id="chat-typing-status" class="text-[11px] font-bold text-brand-gold h-3.5 mt-0.5"></span></div>
             </div>
         </header>
 
         <div id="chat-search-bar" class="hidden bg-brand-surface/90 backdrop-blur-md border-b border-brand-gold/20 p-3 px-4 items-center gap-3 z-10 shadow-lg">
-            <i data-lucide="search" class="w-4 h-4 text-brand-gold"></i>
-            <input type="text" id="chat-search-input" placeholder="اكتب للبحث..." class="flex-1 bg-transparent border-none text-xs text-brand-text outline-none font-medium">
-            <button onclick="closeSearch()" class="text-brand-muted hover:text-red-500 p-1.5"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            <i data-lucide="search" class="w-4 h-4 text-brand-gold"></i><input type="text" id="chat-search-input" placeholder="اكتب للبحث..." class="flex-1 bg-transparent border-none text-xs text-brand-text outline-none font-medium"><button onclick="closeSearch()" class="text-brand-muted hover:text-red-500 p-1.5"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col no-scrollbar relative transition-all duration-300 bg-gradient-to-b from-black/5 to-transparent" id="messages-area"></div>
         
-        <div id="media-preview-container" class="hidden mx-4 mt-2 bg-brand-surface/90 backdrop-blur-xl p-3 border-t-2 border-brand-gold rounded-xl justify-between items-center shadow-lg border-x border-b border-brand-text/5 relative z-20">
-            <div class="flex items-center gap-3 overflow-hidden">
-                <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-brand-text/10 bg-black shrink-0"><img id="preview-img" class="w-full h-full object-cover hidden"><video id="preview-vid" class="w-full h-full object-cover hidden" muted></video></div>
-                <div class="flex flex-col"><span class="text-brand-gold font-black text-[10px]">مرفق</span><span id="preview-file-name" class="text-brand-muted truncate text-xs"></span></div>
+        <footer class="p-2 md:p-4 bg-brand-darker/90 backdrop-blur-2xl flex flex-col z-20 flex-shrink-0 pb-safe border-t border-brand-text/5 shadow-2xl relative overflow-visible">
+            
+            <div id="attachment-menu" class="hidden absolute bottom-24 right-4 bg-brand-surface/95 backdrop-blur-2xl border border-brand-gold/30 rounded-2xl p-2 flex-col gap-1 shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-50 transform translate-y-4 opacity-0 transition-all duration-300">
+                <button onclick="document.getElementById('media-input').click(); toggleAttachmentMenu();" class="flex items-center gap-3 p-3 hover:bg-brand-surface/80 rounded-xl text-brand-text text-sm font-bold transition-colors">
+                    <div class="p-2 bg-brand-gold/10 rounded-lg"><i data-lucide="image" class="w-5 h-5 text-brand-gold"></i></div> معرض الصور والفيديو
+                </button>
+                <button onclick="sendLocation(); toggleAttachmentMenu();" class="flex items-center gap-3 p-3 hover:bg-brand-surface/80 rounded-xl text-brand-text text-sm font-bold transition-colors">
+                    <div class="p-2 bg-blue-500/10 rounded-lg"><i data-lucide="map-pin" class="w-5 h-5 text-blue-400"></i></div> مشاركة الموقع
+                </button>
             </div>
-            <button onclick="cancelMedia()" class="bg-brand-text/5 text-brand-muted hover:text-white hover:bg-red-500 p-2 rounded-lg"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-        </div>
-        
-        <footer class="p-2 md:p-4 bg-brand-darker/90 backdrop-blur-2xl flex flex-col gap-2 z-20 flex-shrink-0 pb-safe border-t border-brand-text/5 shadow-2xl relative">
+
+            <div id="reply-preview-container" class="hidden mx-2 mt-2 bg-brand-surface/90 backdrop-blur-xl p-3 border-r-4 border-brand-emerald rounded-xl shadow-lg relative z-20 flex justify-between items-center mb-2">
+                <div class="flex flex-col truncate flex-1 pr-2">
+                    <span id="reply-sender" class="text-brand-emerald font-bold text-xs mb-1"></span>
+                    <span id="reply-text" class="text-brand-text text-sm truncate opacity-80"></span>
+                </div>
+                <button onclick="cancelReply()" class="text-brand-muted hover:text-red-500 p-2"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+
+            <div id="media-preview-container" class="hidden mx-2 mt-2 mb-2 bg-brand-surface/90 backdrop-blur-xl p-3 border-t-2 border-brand-gold rounded-xl justify-between items-center shadow-lg border-x border-b border-brand-text/5 relative z-20">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-brand-text/10 bg-black shrink-0"><img id="preview-img" class="w-full h-full object-cover hidden"><video id="preview-vid" class="w-full h-full object-cover hidden" muted></video></div>
+                    <div class="flex flex-col"><span class="text-brand-gold font-black text-[10px]">مرفق جاهز للإرسال</span><span id="preview-file-name" class="text-brand-muted truncate text-xs"></span></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="view-once-mode-btn" class="p-2 text-brand-muted hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-all group" title="عرض لمرة واحدة">
+                        <i data-lucide="bomb" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                    </button>
+                    <div class="w-px h-6 bg-brand-text/10"></div>
+                    <button onclick="cancelMedia()" class="p-2 text-brand-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
             <div class="flex items-end gap-2 w-full">
                 <input type="file" id="media-input" accept="image/*,video/*" class="hidden">
-                <button id="attach-btn" class="p-3 bg-brand-surface/60 text-brand-muted hover:text-brand-gold rounded-xl border border-brand-text/5 shrink-0"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
+                
+                <button id="attach-toggle-btn" onclick="toggleAttachmentMenu()" class="p-3 bg-brand-surface/60 text-brand-gold hover:bg-brand-gold hover:text-white rounded-xl border border-brand-gold/20 shrink-0 transition-all shadow-sm">
+                    <i data-lucide="plus" class="w-6 h-6"></i>
+                </button>
                 
                 <div class="flex-1 min-w-[0] bg-brand-surface/60 border border-brand-text/5 focus-within:border-brand-gold rounded-xl flex items-center pl-2 pr-4 min-h-[48px] md:min-h-[52px]">
                     <textarea id="message-input" rows="1" placeholder="رسالة مشفرة..." class="w-full bg-transparent text-brand-text outline-none text-sm resize-none py-3 max-h-32 no-scrollbar font-medium placeholder-brand-muted/70"></textarea>
                 </div>
                 
-                <button id="send-btn" class="p-3 bg-gradient-to-tr from-amber-600 to-brand-gold text-white rounded-xl hover:shadow-lg active:scale-95 flex-shrink-0 min-w-[48px] min-h-[48px]">
-                    <span id="send-btn-icon"><i data-lucide="send" class="w-5 h-5 rtl:-scale-x-100"></i></span>
-                </button>
-            </div>
-
-            <div class="flex items-center justify-start gap-5 px-1.5 py-0.5">
-                <button id="location-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-blue-400 group"><i data-lucide="map-pin" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">مشاركة الموقع</span></button>
-                <div class="h-3 w-px bg-brand-text/5"></div>
-                <button id="view-once-mode-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-gold group" title="إرسال الصور والفيديو لمرة واحدة فقط"><i data-lucide="bomb" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">عرض لمرة واحدة (View Once)</span></button>
-                <div class="h-3 w-px bg-brand-text/5"></div>
-                <button id="mic-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-red-400 group"><i data-lucide="mic" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">مذكرة صوتية</span></button>
+                <div class="relative w-12 h-12 flex-shrink-0">
+                    <button id="mic-btn" class="absolute inset-0 flex items-center justify-center p-3 bg-brand-surface/60 text-brand-muted hover:text-red-400 rounded-xl border border-brand-text/5 transition-all duration-300 scale-100 opacity-100 shadow-sm">
+                        <i data-lucide="mic" class="w-5 h-5"></i>
+                    </button>
+                    <button id="send-btn" class="absolute inset-0 flex items-center justify-center p-3 bg-gradient-to-tr from-brand-emerald to-brand-gold text-white rounded-xl hover:shadow-lg active:scale-95 transition-all duration-300 scale-50 opacity-0 pointer-events-none">
+                        <i data-lucide="send" class="w-5 h-5 rtl:-scale-x-100"></i>
+                    </button>
+                </div>
             </div>
         </footer>
     </div>
@@ -311,10 +245,24 @@
         <footer class="p-4 pb-safe bg-black/40 border-t border-brand-text/5 flex justify-between items-center backdrop-blur-xl z-10"><div class="flex items-center gap-3"><div class="p-1 bg-white/5 rounded-full"><input type="color" id="story-color" value="#d97706" onchange="document.getElementById('create-story-bg').style.backgroundColor = this.value" class="w-10 h-10 rounded-full cursor-pointer bg-transparent border-none"></div><input type="file" id="story-file-input" accept="image/*,video/*" class="hidden"><button onclick="document.getElementById('story-file-input').click()" class="text-white bg-gray-800/60 p-3 rounded-full hover:bg-gray-700"><i data-lucide="camera" class="w-5 h-5"></i></button></div><button id="post-story-btn" class="bg-brand-gold text-white px-8 py-3 rounded-full font-bold flex items-center"><span id="post-story-text">نشر</span><i data-lucide="send" class="w-4 h-4 ml-2 rtl:-scale-x-100"></i></button></footer>
     </div>
 
-    <div id="story-viewer-modal" class="hidden fixed inset-0 z-[120] bg-black flex flex-col">
-        <div id="story-progress-container" class="absolute top-2 w-full flex gap-1 px-2 z-30 pt-safe"></div>
-        <div class="absolute top-6 w-full flex justify-between items-center p-4 z-30 pt-safe bg-gradient-to-b from-black/80 to-transparent"><div class="flex items-center gap-3"><button onclick="closeStoryViewer()" class="text-white p-1 hover:bg-white/10 rounded-full"><i data-lucide="arrow-right" class="w-5 h-5 rtl:-scale-x-100"></i></button><div class="w-9 h-9 rounded-full bg-brand-surface border border-gray-400 flex items-center justify-center overflow-hidden" id="sv-avatar"></div><div class="flex flex-col"><span id="sv-name" class="text-white font-bold text-xs drop-shadow-md"></span><span id="sv-time" class="text-gray-300 text-[10px] drop-shadow-md"></span></div></div></div>
-        <div id="sv-content-area" class="flex-1 flex items-center justify-center relative w-full h-full bg-brand-darker overflow-hidden"><div id="sv-bg" class="absolute inset-0 bg-cover bg-center opacity-20 blur-3xl scale-125 transition-all"></div><div id="sv-media-container" class="relative z-20 w-full h-full flex flex-col items-center justify-center p-4"></div><div class="absolute left-0 w-1/4 h-full z-30 cursor-pointer" onclick="prevStory()"></div><div class="absolute right-0 w-3/4 h-full z-30 cursor-pointer" onclick="nextStory()"></div></div>
+    <div id="context-overlay" class="hidden fixed inset-0 z-[400] bg-black/10 backdrop-blur-[2px] transition-opacity opacity-0" onclick="closeContextMenu()"></div>
+
+    <div id="context-menu" class="hidden fixed z-[410] w-64 bg-brand-surface/90 backdrop-blur-3xl border border-brand-gold/20 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden scale-95 opacity-0 transition-all duration-200 origin-center">
+        <div class="flex justify-around items-center p-3 border-b border-brand-text/5 bg-black/20">
+            <button class="text-2xl hover:scale-125 transition-transform" onclick="reactToMsg('❤️')">❤️</button>
+            <button class="text-2xl hover:scale-125 transition-transform" onclick="reactToMsg('😂')">😂</button>
+            <button class="text-2xl hover:scale-125 transition-transform" onclick="reactToMsg('👍')">👍</button>
+            <button class="text-2xl hover:scale-125 transition-transform" onclick="reactToMsg('😮')">😮</button>
+        </div>
+        <button onclick="replyToMsg()" class="flex items-center gap-3 p-4 hover:bg-brand-gold/20 text-brand-text font-bold border-b border-brand-text/5 transition-colors">
+            <i data-lucide="reply" class="w-5 h-5 text-brand-gold rtl:-scale-x-100"></i> رد على الرسالة
+        </button>
+        <button id="ctx-edit-btn" onclick="editMsg()" class="flex items-center gap-3 p-4 hover:bg-brand-emerald/20 text-brand-text font-bold border-b border-brand-text/5 transition-colors hidden">
+            <i data-lucide="edit-3" class="w-5 h-5 text-brand-emerald"></i> تعديل الرسالة
+        </button>
+        <button onclick="deleteMsg()" class="flex items-center gap-3 p-4 hover:bg-red-500/20 text-red-500 font-bold transition-colors">
+            <i data-lucide="trash-2" class="w-5 h-5"></i> حذف الرسالة
+        </button>
     </div>
 
     <script>lucide.createIcons();</script>
@@ -330,41 +278,30 @@
         const supabaseUrl = 'https://ujfptypolkechnenlktn.supabase.co'; const supabaseKey = 'sb_publishable_acF6kxVVlBjNKlt1KisIAQ_ICJizyhv'; const supabase = createClient(supabaseUrl, supabaseKey);
 
         const authScreen = document.getElementById('auth-screen'); const mainScreen = document.getElementById('main-screen'); const chatScreen = document.getElementById('chat-screen');
+        const messageInput = document.getElementById('message-input');
         
         let currentUser = null; let currentChatId = null; let currentMessagesRef = null; 
         window.userProfiles = {}; window.groupCreators = {}; window.selectedMediaFile = null;
         let isViewOnceMode = false; let activeWavesurfers = {}; let typingTimeout = null;
         let mediaRecorder; let audioChunks = []; let isRecording = false; let myBlockedUsers = {};
         
+        // متغيرات التعديل والرد
+        let editingMessageId = null;
+        let replyingToMsg = null;
+        let selectedMsgContext = null;
+        let longPressTimer;
+
         let storySelectedFile = null; window.groupedStories = {}; window.storyUserIds = []; window.currentStoryUserIndex = 0; window.currentStoryItemIndex = 0; window.storyTimer = null; const STORY_DURATION = 5000;
         let authMode = 'login'; let authSelectedAvatar = null;
 
         const SECRET_KEY = "HunterPremiumApp2026_Secret_Key"; 
 
-        /* --- تفعيل Particles.js --- */
-        particlesJS('particles-js', {
-            particles: { number: { value: 30 }, color: { value: '#d97706' }, opacity: { value: 0.15 }, size: { value: 2 }, line_linked: { enable: true, distance: 150, color: '#d97706', opacity: 0.1, width: 1 }, move: { enable: true, speed: 0.8 } }
-        });
+        particlesJS('particles-js', { particles: { number: { value: 30 }, color: { value: '#d97706' }, opacity: { value: 0.15 }, size: { value: 2 }, line_linked: { enable: true, distance: 150, color: '#d97706', opacity: 0.1, width: 1 }, move: { enable: true, speed: 0.8 } } });
 
-        /* --- نظام التشفير --- */
-        function encryptMessage(text) {
-            if(!text) return "";
-            return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
-        }
-        function decryptMessage(cipherText) {
-            if(!cipherText) return "";
-            try {
-                const bytes = CryptoJS.AES.decrypt(cipherText, SECRET_KEY);
-                return bytes.toString(CryptoJS.enc.Utf8) || cipherText;
-            } catch(e) { return cipherText; }
-        }
+        function encryptMessage(text) { if(!text) return ""; return CryptoJS.AES.encrypt(text, SECRET_KEY).toString(); }
+        function decryptMessage(cipherText) { if(!cipherText) return ""; try { const bytes = CryptoJS.AES.decrypt(cipherText, SECRET_KEY); return bytes.toString(CryptoJS.enc.Utf8) || cipherText; } catch(e) { return cipherText; } }
 
-        /* --- الدوال العامة --- */
-        window.toggleTheme = function() {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.setItem('theme', 'light'); } 
-            else { html.classList.add('dark'); localStorage.setItem('theme', 'dark'); }
-        };
+        window.toggleTheme = function() { const html = document.documentElement; if (html.classList.contains('dark')) { html.classList.remove('dark'); localStorage.setItem('theme', 'light'); } else { html.classList.add('dark'); localStorage.setItem('theme', 'dark'); } };
 
         function getAvatarHtml(user, sizeClass = "w-12 h-12", textClass = "text-xl") {
             if (user && user.avatarUrl) return `<img src="${user.avatarUrl}" class="w-full h-full object-cover">`;
@@ -372,29 +309,13 @@
             return `<span class="text-brand-gold font-black ${textClass} drop-shadow-md">${name.charAt(0).toUpperCase()}</span>`;
         }
 
-        window.switchAuthMode = function(mode) {
-            authMode = mode;
-            const tabLogin = document.getElementById('tab-login'); const tabSignup = document.getElementById('tab-signup');
-            const signupFields = document.getElementById('signup-fields'); const actionBtn = document.getElementById('auth-btn-text');
-            if (mode === 'signup') {
-                tabSignup.className = "pb-3 text-brand-gold font-black border-b-2 border-brand-gold transition-colors text-lg tracking-wide";
-                tabLogin.className = "pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide";
-                signupFields.classList.remove('hidden'); signupFields.classList.add('flex'); actionBtn.innerText = "إنشاء حساب فاخر";
-            } else {
-                tabLogin.className = "pb-3 text-brand-gold font-black border-b-2 border-brand-gold transition-colors text-lg tracking-wide";
-                tabSignup.className = "pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide";
-                signupFields.classList.add('hidden'); signupFields.classList.remove('flex'); actionBtn.innerText = "دخول للنظام";
-            }
+        window.switchAuthMode = function(mode) { /* Code unchanged */ 
+            authMode = mode; const tabLogin = document.getElementById('tab-login'); const tabSignup = document.getElementById('tab-signup'); const signupFields = document.getElementById('signup-fields'); const actionBtn = document.getElementById('auth-btn-text');
+            if (mode === 'signup') { tabSignup.className = "pb-3 text-brand-gold font-black border-b-2 border-brand-gold transition-colors text-lg tracking-wide"; tabLogin.className = "pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide"; signupFields.classList.remove('hidden'); signupFields.classList.add('flex'); actionBtn.innerText = "إنشاء حساب فاخر"; } 
+            else { tabLogin.className = "pb-3 text-brand-gold font-black border-b-2 border-brand-gold transition-colors text-lg tracking-wide"; tabSignup.className = "pb-3 text-brand-muted font-bold border-b-2 border-transparent hover:text-brand-gold transition-colors text-lg tracking-wide"; signupFields.classList.add('hidden'); signupFields.classList.remove('flex'); actionBtn.innerText = "دخول للنظام"; }
         };
 
-        document.getElementById('auth-avatar-input').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                authSelectedAvatar = file; const url = URL.createObjectURL(file);
-                document.getElementById('auth-avatar-icon').classList.add('hidden');
-                document.getElementById('auth-avatar-preview').src = url; document.getElementById('auth-avatar-preview').classList.remove('hidden');
-            }
-        });
+        document.getElementById('auth-avatar-input').addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { authSelectedAvatar = file; document.getElementById('auth-avatar-icon').classList.add('hidden'); document.getElementById('auth-avatar-preview').src = URL.createObjectURL(file); document.getElementById('auth-avatar-preview').classList.remove('hidden'); } });
 
         async function uploadFileToSupabase(file) {
             const ext = file.name.split('.').pop(); const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
@@ -405,33 +326,18 @@
         function setupPresence(user) {
             const connectedRef = ref(db, '.info/connected'); const myStatusRef = ref(db, `users/${user.uid}/status`); const myLastSeenRef = ref(db, `users/${user.uid}/lastSeen`);
             onValue(connectedRef, (snap) => {
-                if (snap.val() === true) {
-                    document.getElementById('global-connection-status').classList.replace('bg-red-500', 'bg-amber-500'); document.getElementById('global-connection-text').innerText = "متصل ومزامن";
-                    onDisconnect(myStatusRef).set('offline'); onDisconnect(myLastSeenRef).set(serverTimestamp()); set(myStatusRef, 'online');
-                } else {
-                    document.getElementById('global-connection-status').classList.replace('bg-amber-500', 'bg-red-500'); document.getElementById('global-connection-text').innerText = "غير متصل";
-                }
+                if (snap.val() === true) { document.getElementById('global-connection-status').classList.replace('bg-red-500', 'bg-amber-500'); document.getElementById('global-connection-text').innerText = "متصل ومزامن"; onDisconnect(myStatusRef).set('offline'); onDisconnect(myLastSeenRef).set(serverTimestamp()); set(myStatusRef, 'online'); } 
+                else { document.getElementById('global-connection-status').classList.replace('bg-amber-500', 'bg-red-500'); document.getElementById('global-connection-text').innerText = "غير متصل"; }
             });
         }
 
-        /* --- المصادقة --- */
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user; authScreen.classList.add('opacity-0'); setTimeout(() => authScreen.classList.add('hidden'), 500); mainScreen.classList.remove('hidden');
-                setupPresence(user);
-                onValue(ref(db, `users/${user.uid}/blocked`), snap => { myBlockedUsers = snap.val() || {}; loadUsers(); });
-                onValue(ref(db, `users/${user.uid}`), (snap) => {
-                    const data = snap.val();
-                    if (data) {
-                        window.userProfiles[user.uid] = data;
-                        document.getElementById('profile-name').value = data.name || ''; document.getElementById('profile-bio').value = data.bio || '';
-                        if (data.avatarUrl) { document.getElementById('settings-avatar-icon').classList.add('hidden'); document.getElementById('settings-avatar-img').src = data.avatarUrl; document.getElementById('settings-avatar-img').classList.remove('hidden'); }
-                    }
-                });
+                setupPresence(user); onValue(ref(db, `users/${user.uid}/blocked`), snap => { myBlockedUsers = snap.val() || {}; loadUsers(); });
+                onValue(ref(db, `users/${user.uid}`), (snap) => { const data = snap.val(); if (data) { window.userProfiles[user.uid] = data; document.getElementById('profile-name').value = data.name || ''; document.getElementById('profile-bio').value = data.bio || ''; if (data.avatarUrl) { document.getElementById('settings-avatar-icon').classList.add('hidden'); document.getElementById('settings-avatar-img').src = data.avatarUrl; document.getElementById('settings-avatar-img').classList.remove('hidden'); } } });
                 loadGroups(); loadStories();
-            } else {
-                currentUser = null; authScreen.classList.remove('hidden', 'opacity-0'); mainScreen.classList.add('hidden'); chatScreen.classList.add('hidden');
-            }
+            } else { currentUser = null; authScreen.classList.remove('hidden', 'opacity-0'); mainScreen.classList.add('hidden'); chatScreen.classList.add('hidden'); }
         });
 
         document.getElementById('auth-action-btn').addEventListener('click', async () => {
@@ -442,8 +348,7 @@
             try {
                 if (authMode === 'login') { await signInWithEmailAndPassword(auth, email, password); } 
                 else {
-                    const name = document.getElementById('auth-name').value.trim() || email.split('@')[0];
-                    let avatarUrl = null; if (authSelectedAvatar) { avatarUrl = await uploadFileToSupabase(authSelectedAvatar); }
+                    const name = document.getElementById('auth-name').value.trim() || email.split('@')[0]; let avatarUrl = null; if (authSelectedAvatar) { avatarUrl = await uploadFileToSupabase(authSelectedAvatar); }
                     const cred = await createUserWithEmailAndPassword(auth, email, password);
                     await set(ref(db, 'users/' + cred.user.uid), { uid: cred.user.uid, email: cred.user.email, name: name, avatarUrl: avatarUrl, bio: 'متاح للمحادثة', status: 'online' });
                 }
@@ -453,19 +358,9 @@
         document.getElementById('logout-btn').addEventListener('click', () => { set(ref(db, `users/${currentUser.uid}/status`), 'offline').then(() => signOut(auth)); });
 
         window.switchTab = function(tabId, title) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            if(title) document.getElementById('main-header-title').innerText = title;
-            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-brand-gold', 'bg-brand-gold/10'); btn.classList.add('text-brand-muted'); });
-            const activeBtn = document.getElementById(`nav-${tabId}`);
-            if(activeBtn) { activeBtn.classList.remove('text-brand-muted'); activeBtn.classList.add('text-brand-gold', 'bg-brand-gold/10'); }
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); if(title) document.getElementById('main-header-title').innerText = title;
+            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-brand-gold', 'bg-brand-gold/10'); btn.classList.add('text-brand-muted'); }); const activeBtn = document.getElementById(`nav-${tabId}`); if(activeBtn) { activeBtn.classList.remove('text-brand-muted'); activeBtn.classList.add('text-brand-gold', 'bg-brand-gold/10'); }
         };
-
-        const contactSearchInput = document.getElementById('contact-search-input');
-        contactSearchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.user-list-item').forEach(item => { const name = item.getAttribute('data-name').toLowerCase(); item.style.display = name.includes(term) ? 'flex' : 'none'; });
-        });
 
         function loadUsers() {
             onValue(ref(db, 'users'), (snapshot) => {
@@ -475,36 +370,25 @@
                     if(user && user.uid && (user.name || user.email)) {
                         window.userProfiles[user.uid] = user; 
                         if(user.uid !== currentUser.uid && !myBlockedUsers[user.uid]) {
-                            const userName = user.name || user.email.split('@')[0];
-                            const isOnline = user.status === 'online';
-                            const statusDotHtml = isOnline ? `<div class="absolute -bottom-1 -right-1 w-3 h-3 bg-amber-500 border-2 border-brand-darker rounded-full shadow-sm"></div>` : '';
-                            
-                            const div = document.createElement('div');
-                            div.className = "user-list-item flex items-center gap-4 p-4 bg-brand-surface/20 hover:bg-brand-surface/40 border border-brand-text/5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md";
-                            div.setAttribute('data-name', userName);
-                            div.innerHTML = `
-                                <div class="relative">
-                                    <div class="w-14 h-14 bg-gradient-to-tr from-brand-dark to-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20 overflow-hidden shadow-inner">
-                                        ${getAvatarHtml(user)}
-                                    </div>
-                                    ${statusDotHtml}
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-brand-text font-black text-[15px]">${userName}</h4>
-                                    <p class="text-xs text-brand-muted font-medium truncate mt-0.5">${user.bio || "متاح للمحادثة"}</p>
-                                </div>`;
-                            div.onclick = () => window.openChat(user.uid, userName, 'private');
-                            list.appendChild(div);
+                            const userName = user.name || user.email.split('@')[0]; const isOnline = user.status === 'online'; const statusDotHtml = isOnline ? `<div class="absolute -bottom-1 -right-1 w-3 h-3 bg-amber-500 border-2 border-brand-darker rounded-full shadow-sm"></div>` : '';
+                            const div = document.createElement('div'); div.className = "user-list-item flex items-center gap-4 p-4 bg-brand-surface/20 hover:bg-brand-surface/40 border border-brand-text/5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md"; div.setAttribute('data-name', userName);
+                            div.innerHTML = `<div class="relative"><div class="w-14 h-14 bg-gradient-to-tr from-brand-dark to-brand-gold/10 rounded-2xl flex items-center justify-center border border-brand-gold/20 overflow-hidden shadow-inner">${getAvatarHtml(user)}</div>${statusDotHtml}</div><div class="flex-1"><h4 class="text-brand-text font-black text-[15px]">${userName}</h4><p class="text-xs text-brand-muted font-medium truncate mt-0.5">${user.bio || "متاح للمحادثة"}</p></div>`;
+                            div.onclick = () => window.openChat(user.uid, userName, 'private'); list.appendChild(div);
                         }
                     }
                 });
             });
         }
 
-        /* --- المجموعات --- */
+        /* --- إنشاء مجموعة مع تعيين المشرف --- */
         document.getElementById('create-group-btn').addEventListener('click', () => {
             const name = document.getElementById('new-group-name').value.trim();
-            if(name) { push(ref(db, 'groups'), { name: name, createdBy: currentUser.uid }).then(() => document.getElementById('new-group-name').value = ''); }
+            if(name) { 
+                push(ref(db, 'groups'), { 
+                    name: name, createdBy: currentUser.uid, 
+                    members: { [currentUser.uid]: { role: 'admin' } } 
+                }).then(() => document.getElementById('new-group-name').value = ''); 
+            }
         });
 
         function loadGroups() {
@@ -512,147 +396,13 @@
                 const list = document.getElementById('groups-list'); list.innerHTML = '';
                 snapshot.forEach(child => {
                     const group = child.val(); if(!group || !group.name) return;
-                    window.groupCreators[child.key] = group.createdBy;
-                    const div = document.createElement('div');
-                    div.className = "flex items-center gap-4 p-4 bg-brand-surface/20 hover:bg-brand-surface/40 border border-brand-text/5 rounded-2xl cursor-pointer transition-all hover:shadow-md";
+                    window.groupCreators[child.key] = group;
+                    const div = document.createElement('div'); div.className = "flex items-center gap-4 p-4 bg-brand-surface/20 hover:bg-brand-surface/40 border border-brand-text/5 rounded-2xl cursor-pointer transition-all hover:shadow-md";
                     div.innerHTML = `<div class="w-12 h-12 bg-brand-gold/10 rounded-xl flex items-center justify-center border border-brand-gold/20"><i data-lucide="users" class="w-6 h-6 text-brand-gold"></i></div><div class="flex-1"><h4 class="text-brand-text font-extrabold">${group.name}</h4><p class="text-xs text-brand-muted">مساحة عمل مشتركة</p></div>`;
-                    div.onclick = () => window.openChat(child.key, group.name, 'group');
-                    list.appendChild(div);
+                    div.onclick = () => window.openChat(child.key, group.name, 'group'); list.appendChild(div);
                 }); lucide.createIcons();
             });
         }
-
-        /* --- الحالات (Stories) --- */
-        window.openCreateStory = function() { document.getElementById('create-story-modal').classList.remove('hidden'); document.getElementById('story-input').focus(); };
-        window.closeCreateStory = function() {
-            document.getElementById('create-story-modal').classList.add('hidden'); 
-            document.getElementById('story-input').value = ""; 
-            storySelectedFile = null; 
-            document.getElementById('story-file-input').value = "";
-            document.getElementById('story-img-preview').classList.add('hidden'); 
-            document.getElementById('story-vid-preview').classList.add('hidden');
-            document.getElementById('create-story-bg').style.backgroundColor = '#d97706';
-        };
-
-        const storyFileInput = document.getElementById('story-file-input');
-        storyFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                storySelectedFile = file; const fileUrl = URL.createObjectURL(file);
-                if (file.type.startsWith('video/')) { document.getElementById('story-img-preview').classList.add('hidden'); document.getElementById('story-vid-preview').src = fileUrl; document.getElementById('story-vid-preview').classList.remove('hidden'); } 
-                else { document.getElementById('story-vid-preview').classList.add('hidden'); document.getElementById('story-img-preview').src = fileUrl; document.getElementById('story-img-preview').classList.remove('hidden'); }
-            }
-        });
-
-        document.getElementById('post-story-btn').addEventListener('click', async () => {
-            const text = document.getElementById('story-input').value.trim(); const color = document.getElementById('story-color').value;
-            if (!text && !storySelectedFile) return;
-            document.getElementById('post-story-text').innerText = "جاري النشر...";
-            let mediaUrl = null; let mediaType = null;
-            if (storySelectedFile) {
-                try { mediaUrl = await uploadFileToSupabase(storySelectedFile); mediaType = storySelectedFile.type.startsWith('video/') ? 'video' : 'image'; } 
-                catch (err) { alert("فشل النشر."); document.getElementById('post-story-text').innerText = "نشر"; return; }
-            }
-            push(ref(db, 'stories'), { senderId: currentUser.uid, senderEmail: currentUser.email, text: text, bgColor: color, mediaUrl: mediaUrl, mediaType: mediaType, timestamp: Date.now() }).then(() => { window.closeCreateStory(); document.getElementById('post-story-text').innerText = "نشر"; });
-        });
-
-        function loadStories() {
-            onValue(ref(db, 'stories'), (snapshot) => {
-                window.groupedStories = {}; const now = Date.now(); let hasMyStory = false;
-                snapshot.forEach((child) => {
-                    const story = child.val();
-                    if (story && story.timestamp && (now - story.timestamp < 24 * 60 * 60 * 1000)) {
-                        if (!window.groupedStories[story.senderId]) window.groupedStories[story.senderId] = [];
-                        window.groupedStories[story.senderId].push(story);
-                        if (story.senderId === currentUser?.uid) hasMyStory = true;
-                    }
-                });
-                Object.keys(window.groupedStories).forEach(uid => { window.groupedStories[uid].sort((a,b) => a.timestamp - b.timestamp); });
-
-                const hList = document.getElementById('stories-avatars-list'); const vList = document.getElementById('stories-vertical-list');
-                if(!hList || !vList || !currentUser) return;
-                const myProfile = window.userProfiles[currentUser.uid] || { name: currentUser.email.split('@')[0] };
-                
-                hList.innerHTML = `<div class="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer group" onclick="${hasMyStory ? `openStoryViewer('${currentUser.uid}')` : 'openCreateStory()'}"><div class="relative w-[70px] h-[70px] rounded-full bg-brand-surface flex items-center justify-center border-2 border-dashed ${hasMyStory ? 'border-brand-gold' : 'border-brand-text/20'} group-hover:border-brand-gold p-[2px]"><div class="w-full h-full rounded-full bg-brand-darker flex items-center justify-center overflow-hidden shadow-inner">${getAvatarHtml(myProfile, "w-full h-full", "text-2xl")}</div>${!hasMyStory ? `<div class="absolute bottom-0 right-0 w-6 h-6 bg-brand-gold rounded-full border-2 border-brand-darker flex items-center justify-center text-white"><i data-lucide="plus" class="w-4 h-4"></i></div>` : ''}</div><span class="text-[11px] text-brand-text font-bold truncate w-20 text-center mt-1">حالتي</span></div>`;
-                
-                const foreignStoriesCount = Object.keys(window.groupedStories).filter(uid => uid !== currentUser.uid && !myBlockedUsers[uid]).length;
-
-                if (foreignStoriesCount === 0) { vList.innerHTML = `<div class="flex flex-col items-center justify-center py-10 opacity-50"><i data-lucide="image" class="w-10 h-10 text-brand-muted mb-2"></i><p class="text-brand-muted text-sm text-center">لا توجد حالات جديدة.</p></div>`; } 
-                else {
-                    vList.innerHTML = '';
-                    Object.keys(window.groupedStories).forEach(uid => {
-                        if (uid === currentUser.uid || myBlockedUsers[uid]) return; 
-                        const userStories = window.groupedStories[uid]; const lastStory = userStories[userStories.length - 1];
-                        const userProfile = window.userProfiles[uid] || { name: (lastStory.senderEmail || "مجهول").split('@')[0] };
-                        const timeString = new Date(lastStory.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        
-                        const hDiv = document.createElement('div');
-                        hDiv.className = "flex flex-col items-center gap-2 min-w-[80px] cursor-pointer transform hover:scale-105 transition-transform";
-                        hDiv.onclick = () => window.openStoryViewer(uid);
-                        hDiv.innerHTML = `<div class="w-[70px] h-[70px] rounded-full bg-brand-dark flex items-center justify-center border-[3px] border-brand-gold p-[2px]"><div class="w-full h-full rounded-full bg-brand-surface flex items-center justify-center overflow-hidden shadow-inner">${getAvatarHtml(userProfile, "w-full h-full", "text-2xl")}</div></div><span class="text-[11px] text-brand-text font-medium truncate w-20 text-center mt-1">${userProfile.name}</span>`;
-                        hList.appendChild(hDiv);
-
-                        const vDiv = document.createElement('div');
-                        vDiv.className = "flex items-center gap-4 p-3 bg-brand-surface/20 hover:bg-brand-surface/40 rounded-2xl cursor-pointer transition-colors border border-brand-text/5 shadow-sm";
-                        vDiv.onclick = () => window.openStoryViewer(uid);
-                        vDiv.innerHTML = `<div class="w-14 h-14 rounded-full bg-brand-dark flex items-center justify-center border-[2.5px] border-brand-gold p-[2px]"><div class="w-full h-full rounded-full bg-brand-surface flex items-center justify-center overflow-hidden">${getAvatarHtml(userProfile, "w-full h-full", "text-lg")}</div></div><div class="flex-1 border-b border-brand-text/5 pb-3 mt-3"><h4 class="text-brand-text font-black text-base">${userProfile.name}</h4><p class="text-[11px] text-brand-muted font-bold mt-1">${timeString}</p></div>`;
-                        vList.appendChild(vDiv);
-                    });
-                }
-                lucide.createIcons();
-            });
-        }
-
-        window.openStoryViewer = function(userId) { window.storyUserIds = Object.keys(window.groupedStories); window.currentStoryUserIndex = window.storyUserIds.indexOf(userId); window.currentStoryItemIndex = 0; document.getElementById('story-viewer-modal').classList.remove('hidden'); window.renderCurrentStory(); };
-        window.closeStoryViewer = function() { document.getElementById('story-viewer-modal').classList.add('hidden'); clearTimeout(window.storyTimer); const vid = document.getElementById('sv-video-player'); if(vid) { vid.pause(); vid.src = ''; } };
-
-        window.renderCurrentStory = function() {
-            clearTimeout(window.storyTimer);
-            if (window.currentStoryUserIndex >= window.storyUserIds.length || window.currentStoryUserIndex < 0) { window.closeStoryViewer(); return; }
-
-            const uid = window.storyUserIds[window.currentStoryUserIndex]; const userStories = window.groupedStories[uid];
-            if (window.currentStoryItemIndex >= userStories.length) { window.currentStoryUserIndex++; window.currentStoryItemIndex = 0; window.renderCurrentStory(); return; }
-            if (window.currentStoryItemIndex < 0) { window.currentStoryUserIndex--; if(window.currentStoryUserIndex < 0) { window.closeStoryViewer(); return; } window.currentStoryItemIndex = window.groupedStories[window.storyUserIds[window.currentStoryUserIndex]].length - 1; window.renderCurrentStory(); return; }
-
-            const story = userStories[window.currentStoryItemIndex]; const userProfile = window.userProfiles[story.senderId] || { name: story.senderEmail.split('@')[0] };
-            
-            document.getElementById('sv-name').innerText = userProfile.name; document.getElementById('sv-time').innerText = new Date(story.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); document.getElementById('sv-avatar').innerHTML = getAvatarHtml(userProfile, "w-full h-full", "text-lg");
-
-            const progressContainer = document.getElementById('story-progress-container'); progressContainer.innerHTML = '';
-            userStories.forEach((s, idx) => {
-                const bar = document.createElement('div'); bar.className = 'flex-1 h-1 bg-gray-500/50 rounded-full overflow-hidden';
-                const fill = document.createElement('div'); fill.className = 'h-full bg-white story-progress-fill';
-                if (idx < window.currentStoryItemIndex) { fill.style.width = '100%'; } else if (idx === window.currentStoryItemIndex) { fill.style.width = '0%'; setTimeout(() => { fill.style.width = '100%'; }, 50); } else { fill.style.width = '0%'; }
-                bar.appendChild(fill); progressContainer.appendChild(bar);
-            });
-
-            const container = document.getElementById('sv-media-container'); const bg = document.getElementById('sv-bg');
-            container.innerHTML = ''; container.style.opacity = 0; let duration = STORY_DURATION;
-
-            setTimeout(() => {
-                if (story.mediaUrl) {
-                    if (story.mediaType === 'video') {
-                        bg.style.backgroundImage = 'none'; container.parentElement.style.backgroundColor = '#000';
-                        container.innerHTML = `<video id="sv-video-player" src="${story.mediaUrl}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border border-white/10" autoplay playsinline></video>${story.text ? `<p class="absolute bottom-24 bg-black/50 backdrop-blur-md text-white px-6 py-3 rounded-2xl text-center w-5/6 text-base font-medium border border-white/10">${formatMarkdown(story.text)}</p>` : ''}`;
-                        const vid = document.getElementById('sv-video-player');
-                        vid.onloadedmetadata = () => { duration = vid.duration * 1000; progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(window.nextStory, duration); };
-                        vid.onerror = () => { window.storyTimer = setTimeout(window.nextStory, STORY_DURATION); };
-                    } else {
-                        bg.style.backgroundImage = `url('${story.mediaUrl}')`;
-                        container.innerHTML = `<img src="${story.mediaUrl}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain border border-white/10">${story.text ? `<p class="absolute bottom-24 bg-black/50 backdrop-blur-md text-white px-6 py-3 rounded-2xl text-center w-5/6 text-base font-medium border border-white/10">${formatMarkdown(story.text)}</p>` : ''}`;
-                        progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(window.nextStory, duration);
-                    }
-                } else {
-                    bg.style.backgroundImage = 'none'; container.parentElement.style.backgroundColor = story.bgColor || '#d97706';
-                    container.innerHTML = `<p class="text-white text-2xl md:text-3xl font-black text-center px-8 leading-snug drop-shadow-xl">${formatMarkdown(story.text || '')}</p>`;
-                    progressContainer.children[window.currentStoryItemIndex].firstChild.style.transitionDuration = `${duration}ms`; window.storyTimer = setTimeout(window.nextStory, duration);
-                }
-                container.style.opacity = 1;
-            }, 50);
-        };
-
-        window.nextStory = function() { window.currentStoryItemIndex++; window.renderCurrentStory(); };
-        window.prevStory = function() { window.currentStoryItemIndex--; window.renderCurrentStory(); };
 
         /* --- الدردشة والمراسلة --- */
         function getPrivateChatId(uid1, uid2) { return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
@@ -660,64 +410,184 @@
         window.openChat = function(id, title, type) {
             document.getElementById('chat-title').innerText = title;
             currentChatId = type === 'private' ? getPrivateChatId(currentUser.uid, id) : id;
-            chatScreen.classList.remove('hidden'); window.cancelMedia(); window.closeSearch();
+            chatScreen.classList.remove('hidden'); window.cancelMedia(); window.closeSearch(); window.cancelReply();
             
             const headerAvatar = document.getElementById('chat-header-avatar');
             if (type === 'private') {
                 const profile = window.userProfiles[id]; headerAvatar.innerHTML = getAvatarHtml(profile, "w-full h-full", "text-xl");
-            } else { headerAvatar.innerHTML = `<i data-lucide="hash" class="w-5 h-5 text-brand-gold"></i>`; }
+            } else { headerAvatar.innerHTML = `<i data-lucide="users" class="w-5 h-5 text-brand-gold"></i>`; }
+
+            // تفعيل التحقق من حالة العضو (إذا كان صامتاً Muted في مجموعة)
+            messageInput.disabled = false; messageInput.placeholder = "رسالة مشفرة...";
+            if(type === 'group') {
+                get(ref(db, `groups/${id}/members/${currentUser.uid}`)).then(snap => {
+                    const memberData = snap.val();
+                    if(memberData && memberData.role === 'muted') {
+                        messageInput.disabled = true; messageInput.placeholder = "لقد تم إيقافك عن الكتابة من قِبل المشرف.";
+                        document.getElementById('attach-toggle-btn').classList.add('hidden');
+                    } else { document.getElementById('attach-toggle-btn').classList.remove('hidden'); }
+                });
+            } else { document.getElementById('attach-toggle-btn').classList.remove('hidden'); }
 
             loadMessages(); listenToTyping(); lucide.createIcons();
         };
 
-        document.getElementById('close-chat-btn').addEventListener('click', () => { chatScreen.classList.add('hidden'); currentChatId = null; window.cancelMedia(); });
-        
+        document.getElementById('close-chat-btn').addEventListener('click', () => { chatScreen.classList.add('hidden'); currentChatId = null; window.cancelMedia(); window.cancelReply(); });
+
+        /* --- القائمة الجانبية (Sidebar) وادارة المجموعة --- */
         window.toggleSidebar = function() {
             const sidebar = document.getElementById('chat-sidebar'); const overlay = document.getElementById('sidebar-overlay');
             const isClosed = sidebar.classList.contains('translate-x-full');
             if(isClosed) {
-                const isGroup = currentChatId && !currentChatId.includes('_'); document.getElementById('sidebar-user-name').innerText = document.getElementById('chat-title').innerText;
+                const isGroup = currentChatId && !currentChatId.includes('_'); 
+                document.getElementById('sidebar-user-name').innerText = document.getElementById('chat-title').innerText;
                 const sbAvatar = document.getElementById('sidebar-user-avatar');
+                
                 if(!isGroup) {
                     const otherUid = currentChatId.split('_').find(id => id !== currentUser.uid); const profile = window.userProfiles[otherUid];
                     document.getElementById('sidebar-user-bio').innerText = profile?.bio || "متاح للمحادثة"; sbAvatar.innerHTML = getAvatarHtml(profile, "w-full h-full", "text-5xl");
-                } else { document.getElementById('sidebar-user-bio').innerText = "مجموعة"; sbAvatar.innerHTML = `<span class="text-brand-gold font-bold text-5xl">G</span>`; }
+                    document.getElementById('group-members-container').classList.add('hidden'); document.getElementById('block-user-btn').classList.remove('hidden');
+                } else { 
+                    document.getElementById('sidebar-user-bio').innerText = "مجموعة"; sbAvatar.innerHTML = `<span class="text-brand-gold font-bold text-5xl">G</span>`;
+                    document.getElementById('block-user-btn').classList.add('hidden');
+                    loadGroupMembersInSidebar(currentChatId);
+                }
                 overlay.classList.remove('hidden'); requestAnimationFrame(() => { overlay.classList.remove('opacity-0'); sidebar.classList.remove('translate-x-full'); });
             } else { overlay.classList.add('opacity-0'); sidebar.classList.add('translate-x-full'); setTimeout(() => overlay.classList.add('hidden'), 300); }
         };
 
-        window.clearChat = function() { if(confirm("هل أنت متأكد من مسح جميع الرسائل محلياً؟")) { set(ref(db, `users/${currentUser.uid}/clearedChats/${currentChatId}`), Date.now()); document.getElementById('messages-area').innerHTML = ''; window.toggleSidebar(); } };
-        window.blockUser = function() {
-            const isGroup = currentChatId && !currentChatId.includes('_'); if (isGroup) { alert("لا يمكن حظر مجموعة بالكامل."); return; }
-            const otherUid = currentChatId.split('_').find(id => id !== currentUser.uid);
-            if(confirm("حظر هذا المستخدم؟")) { set(ref(db, `users/${currentUser.uid}/blocked/${otherUid}`), true).then(() => { document.getElementById('close-chat-btn').click(); window.toggleSidebar(); }); }
+        function loadGroupMembersInSidebar(groupId) {
+            const container = document.getElementById('group-members-container'); container.classList.remove('hidden');
+            const list = document.getElementById('group-members-list'); list.innerHTML = '';
+            const groupData = window.groupCreators[groupId];
+            
+            // جلب أعضاء المجموعة لتبسيط الأمر، سنعرض كل المستخدمين مع فحص المشرفين
+            get(ref(db, `groups/${groupId}/members`)).then(snap => {
+                const members = snap.val() || {};
+                const iAmAdmin = members[currentUser.uid] && members[currentUser.uid].role === 'admin';
+                document.getElementById('group-members-count').innerText = `(${Object.keys(window.userProfiles).length})`;
+
+                Object.keys(window.userProfiles).forEach(uid => {
+                    const profile = window.userProfiles[uid];
+                    const role = members[uid] ? members[uid].role : 'member';
+                    const isMe = uid === currentUser.uid;
+                    
+                    let adminControls = '';
+                    if (iAmAdmin && !isMe) {
+                        const muteText = role === 'muted' ? 'إلغاء المنع' : 'منع الكتابة';
+                        adminControls = `
+                            <div class="flex gap-2">
+                                <button onclick="toggleMuteMember('${groupId}', '${uid}', '${role}')" class="text-[10px] bg-brand-surface/40 hover:bg-amber-500/20 text-brand-gold px-2 py-1 rounded-lg">${muteText}</button>
+                            </div>`;
+                    }
+                    
+                    const roleBadge = role === 'admin' ? `<span class="bg-brand-emerald/20 text-brand-emerald text-[9px] px-1.5 py-0.5 rounded font-bold">مشرف</span>` : (role === 'muted' ? `<span class="bg-red-500/20 text-red-500 text-[9px] px-1.5 py-0.5 rounded font-bold">ممنوع</span>` : '');
+
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between p-2 hover:bg-brand-surface/20 rounded-xl transition-colors border border-transparent hover:border-brand-text/5";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg overflow-hidden">${getAvatarHtml(profile, "w-full h-full", "text-sm")}</div>
+                            <div class="flex flex-col"><span class="text-brand-text text-xs font-bold">${profile.name} ${isMe ? '(أنت)' : ''}</span>${roleBadge}</div>
+                        </div>
+                        ${adminControls}
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        window.toggleMuteMember = function(groupId, uid, currentRole) {
+            const newRole = currentRole === 'muted' ? 'member' : 'muted';
+            update(ref(db, `groups/${groupId}/members/${uid}`), { role: newRole }).then(() => { loadGroupMembersInSidebar(groupId); });
         };
 
-        window.toggleSearch = function() { window.toggleSidebar(); document.getElementById('chat-search-bar').classList.remove('hidden'); document.getElementById('chat-search-bar').classList.add('flex'); document.getElementById('chat-search-input').focus(); }
-        window.closeSearch = function() { document.getElementById('chat-search-bar').classList.add('hidden'); document.getElementById('chat-search-bar').classList.remove('flex'); document.getElementById('chat-search-input').value = ""; document.querySelectorAll('.msg-bubble').forEach(b => b.style.display = 'flex'); }
-        document.getElementById('chat-search-input').addEventListener('input', (e) => { const query = e.target.value.toLowerCase().trim(); document.querySelectorAll('.msg-bubble').forEach(bubble => { const text = bubble.getAttribute('data-text').toLowerCase(); bubble.style.display = text.includes(query) ? 'flex' : 'none'; }); });
+        /* --- القائمة المنبثقة للرسائل (iOS Context Menu) --- */
+        window.attachContextMenuEvents = function(div, msgId, decryptedText, isMe, senderName) {
+            div.addEventListener('touchstart', (e) => {
+                longPressTimer = setTimeout(() => { div.classList.add('context-active'); window.openContextMenu(e.touches[0].clientX, e.touches[0].clientY, msgId, decryptedText, isMe, senderName); }, 500);
+            }, {passive: true});
+            div.addEventListener('touchend', () => { clearTimeout(longPressTimer); div.classList.remove('context-active'); });
+            div.addEventListener('touchmove', () => { clearTimeout(longPressTimer); div.classList.remove('context-active'); });
 
-        window.scrollToBottom = function() { const area = document.getElementById('messages-area'); area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); };
-        document.getElementById('messages-area').addEventListener('scroll', () => { const area = document.getElementById('messages-area'); const scrollBtn = document.getElementById('scroll-bottom-btn'); if (area.scrollHeight - area.scrollTop - area.clientHeight > 200) { scrollBtn.classList.remove('hidden', 'opacity-0', 'translate-y-4'); scrollBtn.classList.add('opacity-100', 'translate-y-0'); } else { scrollBtn.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => scrollBtn.classList.add('hidden'), 300); } });
+            div.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); div.classList.add('context-active');
+                window.openContextMenu(e.clientX, e.clientY, msgId, decryptedText, isMe, senderName);
+                setTimeout(()=> div.classList.remove('context-active'), 300);
+            });
+        };
 
-        function formatChatDate(timestamp) {
-            const date = new Date(timestamp); const today = new Date(); const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-            if (date.toDateString() === today.toLocaleDateString()) return "اليوم"; if (date.toDateString() === yesterday.toDateString()) return "أمس";
-            return date.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-        }
+        window.openContextMenu = function(x, y, msgId, text, isMe, senderName) {
+            if(navigator.vibrate) navigator.vibrate(50);
+            selectedMsgContext = { id: msgId, text: text, isMe: isMe, senderName: senderName };
+            const menu = document.getElementById('context-menu'); const overlay = document.getElementById('context-overlay');
+            const editBtn = document.getElementById('ctx-edit-btn');
+            
+            if (isMe && text) editBtn.classList.remove('hidden'); else editBtn.classList.add('hidden');
+            
+            overlay.classList.remove('hidden'); menu.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                let posX = x; let posY = y;
+                if (x + menu.offsetWidth > window.innerWidth) posX = window.innerWidth - menu.offsetWidth - 20;
+                if (y + menu.offsetHeight > window.innerHeight) posY = window.innerHeight - menu.offsetHeight - 20;
+                menu.style.left = `${posX}px`; menu.style.top = `${posY}px`;
+                overlay.classList.remove('opacity-0'); menu.classList.remove('scale-95', 'opacity-0');
+            });
+        };
 
-        /* حماية XSS تم تطبيقها بدقة */
-        function formatMarkdown(text) {
-            if(!text) return '';
-            let html = text.replace(/</g, "<").replace(/>/g, ">"); 
-            html = html.replace(/\*(.*?)\*/g, '<span class="format-bold">$1</span>').replace(/_(.*?)_/g, '<span class="format-italic">$1</span>'); 
-            const urlRegex = /(https?:\/\/[^\s]+)/g; html = html.replace(urlRegex, '<a href="$1" target="_blank" class="text-brand-gold hover:text-amber-500 underline font-medium block truncate" dir="ltr">$1</a>'); 
-            return html.replace(/\n/g, '<br>');
-        }
+        window.closeContextMenu = function() {
+            const menu = document.getElementById('context-menu'); const overlay = document.getElementById('context-overlay');
+            menu.classList.add('scale-95', 'opacity-0'); overlay.classList.add('opacity-0');
+            setTimeout(() => { menu.classList.add('hidden'); overlay.classList.add('hidden'); selectedMsgContext = null; }, 200);
+        };
 
-        /* --- المرفقات والتدمير الذاتي والميكروفون --- */
+        window.deleteMsg = function() { if(selectedMsgContext) { remove(ref(db, `chats/${currentChatId}/messages/${selectedMsgContext.id}`)); closeContextMenu(); } };
+        
+        window.editMsg = function() {
+            if(selectedMsgContext && selectedMsgContext.isMe) {
+                messageInput.value = selectedMsgContext.text; messageInput.focus();
+                editingMessageId = selectedMsgContext.id; updateInputUI(); closeContextMenu();
+            }
+        };
+
+        window.replyToMsg = function() {
+            if(selectedMsgContext) {
+                replyingToMsg = { id: selectedMsgContext.id, text: selectedMsgContext.text || 'مرفق', senderName: selectedMsgContext.senderName };
+                document.getElementById('reply-sender').innerText = replyingToMsg.senderName;
+                document.getElementById('reply-text').innerText = replyingToMsg.text;
+                document.getElementById('reply-preview-container').classList.remove('hidden');
+                messageInput.focus(); updateInputUI(); closeContextMenu();
+            }
+        };
+
+        window.cancelReply = function() { replyingToMsg = null; document.getElementById('reply-preview-container').classList.add('hidden'); };
+
+        window.reactToMsg = function(emoji) {
+            if(selectedMsgContext) {
+                update(ref(db, `chats/${currentChatId}/messages/${selectedMsgContext.id}/reactions`), { [currentUser.uid]: emoji }); closeContextMenu();
+            }
+        };
+
+        /* --- إدارة الأزرار السفلية الديناميكية وإرسال الرسائل --- */
+        window.updateInputUI = function() {
+            const text = messageInput.value.trim(); const sendBtn = document.getElementById('send-btn'); const micBtn = document.getElementById('mic-btn');
+            if (text !== "" || window.selectedMediaFile) {
+                sendBtn.classList.remove('scale-50', 'opacity-0', 'pointer-events-none'); sendBtn.classList.add('scale-100', 'opacity-100');
+                micBtn.classList.remove('scale-100', 'opacity-100'); micBtn.classList.add('scale-50', 'opacity-0', 'pointer-events-none');
+            } else {
+                sendBtn.classList.add('scale-50', 'opacity-0', 'pointer-events-none'); sendBtn.classList.remove('scale-100', 'opacity-100');
+                micBtn.classList.add('scale-100', 'opacity-100'); micBtn.classList.remove('scale-50', 'opacity-0', 'pointer-events-none');
+            }
+        };
+        messageInput.addEventListener('input', () => { messageInput.style.height = 'auto'; messageInput.style.height = (messageInput.scrollHeight) + 'px'; updateInputUI(); if(currentChatId) { set(ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`), true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => remove(ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`)), 1500); } });
+
+        window.toggleAttachmentMenu = function() {
+            const menu = document.getElementById('attachment-menu'); const btn = document.getElementById('attach-toggle-btn');
+            if (menu.classList.contains('hidden')) { menu.classList.remove('hidden'); setTimeout(() => { menu.classList.remove('translate-y-4', 'opacity-0'); }, 10); btn.classList.add('bg-brand-gold', 'text-white'); } 
+            else { menu.classList.add('translate-y-4', 'opacity-0'); setTimeout(() => { menu.classList.add('hidden'); }, 300); btn.classList.remove('bg-brand-gold', 'text-white'); }
+        };
+
         const mediaInput = document.getElementById('media-input');
-        document.getElementById('attach-btn').addEventListener('click', () => mediaInput.click());
         mediaInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -727,25 +597,23 @@
                 if (file.type.startsWith('video/')) { document.getElementById('preview-vid').src = fileUrl; document.getElementById('preview-vid').classList.remove('hidden'); } 
                 else { document.getElementById('preview-img').src = fileUrl; document.getElementById('preview-img').classList.remove('hidden'); }
                 document.getElementById('media-preview-container').classList.remove('hidden'); document.getElementById('media-preview-container').classList.add('flex');
+                updateInputUI();
             }
         });
-        window.cancelMedia = function() { window.selectedMediaFile = null; mediaInput.value = ''; document.getElementById('media-preview-container').classList.add('hidden'); document.getElementById('media-preview-container').classList.remove('flex'); };
+        window.cancelMedia = function() { window.selectedMediaFile = null; mediaInput.value = ''; document.getElementById('media-preview-container').classList.add('hidden'); document.getElementById('media-preview-container').classList.remove('flex'); updateInputUI(); };
 
         const viewOnceBtn = document.getElementById('view-once-mode-btn');
         viewOnceBtn.addEventListener('click', () => {
             isViewOnceMode = !isViewOnceMode;
-            if(isViewOnceMode) { viewOnceBtn.classList.add('text-brand-gold', 'bg-brand-gold/20', 'px-2', 'py-1', 'rounded-lg'); viewOnceBtn.classList.remove('text-brand-muted'); } 
-            else { viewOnceBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20', 'px-2', 'py-1', 'rounded-lg'); viewOnceBtn.classList.add('text-brand-muted'); }
+            if(isViewOnceMode) { viewOnceBtn.classList.add('text-brand-gold', 'bg-brand-gold/20'); viewOnceBtn.classList.remove('text-brand-muted'); } 
+            else { viewOnceBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20'); viewOnceBtn.classList.add('text-brand-muted'); }
         });
 
-        document.getElementById('location-btn').addEventListener('click', () => {
+        window.sendLocation = function() {
             if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    document.getElementById('message-input').value = `📍 موقعي الحالي\nhttps://www.google.com/maps?q=$$${pos.coords.latitude},${pos.coords.longitude}`;
-                    document.getElementById('send-btn').click();
-                }, () => { alert('يرجى تفعيل صلاحية الموقع من المتصفح.'); });
+                navigator.geolocation.getCurrentPosition(pos => { messageInput.value = `📍 موقعي الحالي\nhttps://www.google.com/maps?q=$$${pos.coords.latitude},${pos.coords.longitude}`; updateInputUI(); document.getElementById('send-btn').click(); }, () => { alert('يرجى تفعيل صلاحية الموقع من المتصفح.'); });
             }
-        });
+        };
 
         const micBtn = document.getElementById('mic-btn');
         micBtn.addEventListener('click', async () => {
@@ -753,196 +621,128 @@
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     mediaRecorder = new MediaRecorder(stream); mediaRecorder.start(); isRecording = true;
-                    micBtn.classList.add('animate-pulse', 'text-red-500', 'bg-red-500/20', 'px-2', 'py-1', 'rounded-lg'); micBtn.classList.remove('text-brand-muted');
+                    micBtn.classList.add('animate-pulse', 'text-red-500', 'bg-red-500/20'); micBtn.classList.remove('text-brand-muted');
                     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                     mediaRecorder.onstop = async () => {
-                        let mimeType = mediaRecorder.mimeType || 'audio/webm'; let ext = 'webm';
-                        if (mimeType.includes('mp4')) ext = 'mp4'; else if (mimeType.includes('aac')) ext = 'aac'; else if (mimeType.includes('ogg')) ext = 'ogg';
-                        const audioBlob = new Blob(audioChunks, { type: mimeType }); audioChunks = [];
-                        window.selectedMediaFile = new File([audioBlob], `voice_${Date.now()}.${ext}`, { type: mimeType });
+                        const mimeType = mediaRecorder.mimeType || 'audio/webm'; const audioBlob = new Blob(audioChunks, { type: mimeType }); audioChunks = [];
+                        window.selectedMediaFile = new File([audioBlob], `voice_${Date.now()}.webm`, { type: mimeType });
                         document.getElementById('preview-img').classList.add('hidden'); document.getElementById('preview-vid').classList.add('hidden');
                         document.getElementById('preview-file-name').innerText = 'رسالة صوتية 🎤';
                         document.getElementById('media-preview-container').classList.remove('hidden'); document.getElementById('media-preview-container').classList.add('flex');
+                        updateInputUI();
                     };
                 } catch (err) { alert("يرجى إعطاء صلاحية الميكروفون للمتصفح."); }
-            } else {
-                mediaRecorder.stop(); isRecording = false;
-                micBtn.classList.remove('animate-pulse', 'text-red-500', 'bg-red-500/20', 'px-2', 'py-1', 'rounded-lg'); micBtn.classList.add('text-brand-muted');
-            }
+            } else { mediaRecorder.stop(); isRecording = false; micBtn.classList.remove('animate-pulse', 'text-red-500', 'bg-red-500/20'); micBtn.classList.add('text-brand-muted'); }
         });
-
-        const messageInput = document.getElementById('message-input');
-        messageInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('send-btn').click(); } });
-        messageInput.addEventListener('input', () => {
-            messageInput.style.height = 'auto'; messageInput.style.height = (messageInput.scrollHeight) + 'px';
-            if(!currentChatId) return;
-            const typingRef = ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`);
-            set(typingRef, true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => remove(typingRef), 1500);
-        });
-
-        function listenToTyping() {
-            if(!currentChatId) return;
-            onValue(ref(db, `chats/${currentChatId}/typing`), (snap) => {
-                const typers = snap.val() || {}; const otherTypers = Object.keys(typers).filter(uid => uid !== currentUser.uid);
-                document.getElementById('chat-typing-status').innerText = otherTypers.length > 0 ? "يكتب الآن..." : "";
-            });
-        }
 
         document.getElementById('send-btn').addEventListener('click', async () => {
+            if(messageInput.disabled) return;
             const text = messageInput.value.trim(); 
-            if (text === "" && !window.selectedMediaFile) return;
-            if (!currentChatId) return;
+            if (text === "" && !window.selectedMediaFile) return; if (!currentChatId) return;
 
             let mediaUrl = null; let mediaType = null;
             if (window.selectedMediaFile) {
-                try {
-                    mediaUrl = await uploadFileToSupabase(window.selectedMediaFile);
-                    mediaType = window.selectedMediaFile.type.startsWith('video/') ? 'video' : (window.selectedMediaFile.type.startsWith('audio/') ? 'audio' : 'image');
-                } catch (err) { alert("فشل الرفع"); return; }
+                try { mediaUrl = await uploadFileToSupabase(window.selectedMediaFile); mediaType = window.selectedMediaFile.type.startsWith('video/') ? 'video' : (window.selectedMediaFile.type.startsWith('audio/') ? 'audio' : 'image'); } catch (err) { alert("فشل الرفع"); return; }
             }
 
-            // تشفير النص (E2EE)
             const encryptedText = encryptMessage(text);
-
             const payload = { senderId: currentUser.uid, text: encryptedText, timestamp: serverTimestamp(), status: 'sent', isViewOnce: isViewOnceMode };
             if (mediaUrl) { payload.mediaUrl = mediaUrl; payload.mediaType = mediaType; }
+            if (replyingToMsg) { payload.replyTo = replyingToMsg; }
 
-            push(ref(db, `chats/${currentChatId}/messages`), payload).then(() => { 
-                messageInput.value = ""; messageInput.style.height = 'auto'; window.cancelMedia(); remove(ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`)); 
-                isViewOnceMode = false; viewOnceBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20', 'px-2', 'py-1', 'rounded-lg'); viewOnceBtn.classList.add('text-brand-muted');
-            });
+            if (editingMessageId) {
+                update(ref(db, `chats/${currentChatId}/messages/${editingMessageId}`), { text: encryptedText, isEdited: true }).then(() => resetInput());
+            } else {
+                push(ref(db, `chats/${currentChatId}/messages`), payload).then(() => resetInput());
+            }
+
+            function resetInput() {
+                messageInput.value = ""; messageInput.style.height = 'auto'; window.cancelMedia(); window.cancelReply(); 
+                editingMessageId = null; isViewOnceMode = false; viewOnceBtn.classList.remove('text-brand-gold', 'bg-brand-gold/20'); viewOnceBtn.classList.add('text-brand-muted');
+                remove(ref(db, `chats/${currentChatId}/typing/${currentUser.uid}`)); updateInputUI();
+            }
         });
 
-        // دوال عرض الصور ومقاطع الفيديو العادية أو للعرض لمرة واحدة مع تأخير الحذف
-        window.openViewOnce = function(msgId, url, type) {
-            const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img'); const vid = document.getElementById('lightbox-vid');
-            if(type === 'video') { img.classList.add('hidden'); vid.src = url; vid.classList.remove('hidden'); }
-            else { vid.classList.add('hidden'); img.src = url; img.classList.remove('hidden'); }
-            modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10);
-            
-            // تأخير الحذف لضمان تحميل الوسائط
-            setTimeout(() => {
-                remove(ref(db, `chats/${currentChatId}/messages/${msgId}`));
-            }, 2000);
-        };
-
-        window.openNormalMedia = function(url, type) {
-            const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img'); const vid = document.getElementById('lightbox-vid');
-            if(type === 'video') { img.classList.add('hidden'); vid.src = url; vid.classList.remove('hidden'); }
-            else { vid.classList.add('hidden'); img.src = url; img.classList.remove('hidden'); }
-            modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10);
-        };
-
-        window.closeLightbox = function() { 
-            const modal = document.getElementById('lightbox-modal');
-            modal.classList.add('opacity-0'); setTimeout(() => { modal.classList.add('hidden'); document.getElementById('lightbox-vid').pause(); }, 300); 
-        };
-
-        window.playWave = function(id) { if(activeWavesurfers[id]) activeWavesurfers[id].playPause(); };
+        /* --- جلب الرسائل وعرضها --- */
+        function formatMarkdown(text) {
+            if(!text) return ''; let html = text.replace(/</g, "<").replace(/>/g, ">"); 
+            html = html.replace(/\*(.*?)\*/g, '<span class="format-bold">$1</span>').replace(/_(.*?)_/g, '<span class="format-italic">$1</span>'); 
+            const urlRegex = /(https?:\/\/[^\s]+)/g; html = html.replace(urlRegex, '<a href="$1" target="_blank" class="text-brand-gold hover:text-amber-500 underline font-medium block truncate" dir="ltr">$1</a>'); 
+            return html.replace(/\n/g, '<br>');
+        }
 
         function loadMessages() {
             if (currentMessagesRef) { off(currentMessagesRef); }
-
             get(ref(db, `users/${currentUser.uid}/clearedChats/${currentChatId}`)).then(clearSnap => {
-                const clearedAt = clearSnap.val() || 0;
-                currentMessagesRef = ref(db, `chats/${currentChatId}/messages`);
-
+                const clearedAt = clearSnap.val() || 0; currentMessagesRef = ref(db, `chats/${currentChatId}/messages`);
                 onValue(currentMessagesRef, (snapshot) => {
-                    // تفريغ الرامات من الموجات الصوتية القديمة
-                    Object.keys(activeWavesurfers).forEach(key => {
-                        if (activeWavesurfers[key]) {
-                            activeWavesurfers[key].destroy();
-                            delete activeWavesurfers[key];
-                        }
-                    });
-
                     const area = document.getElementById('messages-area'); area.innerHTML = ''; 
-                    const updatesToRead = {}; let prevSenderId = null; let prevDate = null; let hasMessages = false;
+                    let prevSenderId = null; let hasMessages = false;
 
                     snapshot.forEach(child => {
                         const msg = child.val(); const msgId = child.key; if(!msg) return; 
-                        if (msg.timestamp && msg.timestamp < clearedAt) return;
+                        if (msg.timestamp && msg.timestamp < clearedAt) return; hasMessages = true;
                         
-                        hasMessages = true;
-
-                        if (msg.timestamp) {
-                            const msgDate = formatChatDate(msg.timestamp);
-                            if (prevDate !== msgDate) {
-                                const dateDiv = document.createElement('div'); dateDiv.className = "flex justify-center my-4";
-                                dateDiv.innerHTML = `<span class="bg-brand-surface/50 backdrop-blur-md text-brand-muted text-[10px] font-black px-4 py-1.5 rounded-full border border-brand-text/5 shadow-sm">${msgDate}</span>`;
-                                area.appendChild(dateDiv); prevDate = msgDate;
-                            }
-                        }
-
                         const isMe = msg.senderId === currentUser.uid;
-                        // نظام مؤشرات القراءة (Read Receipts)
-                        if(!isMe && msg.status !== 'read') updatesToRead[`${msgId}/status`] = 'read';
+                        if(!isMe && msg.status !== 'read') update(ref(db, `chats/${currentChatId}/messages/${msgId}`), {status: 'read'});
 
                         const senderName = window.userProfiles[msg.senderId]?.name || (msg.senderEmail || "مجهول").split('@')[0];
-                        const isGrouped = prevSenderId === msg.senderId; prevSenderId = msg.senderId;
-                        
-                        const marginClass = isGrouped ? 'mt-1' : 'mt-4';
-                        const radiusClass = isMe ? 'rounded-2xl rounded-tr-sm' : 'rounded-2xl rounded-tl-sm';
-                        
-                        // فك التشفير برمجياً للرسالة (E2EE)
                         const decryptedText = decryptMessage(msg.text);
-
+                        
                         let mediaHtml = '';
                         if (msg.mediaUrl) {
                             if (msg.isViewOnce) {
                                 if (isMe) { mediaHtml = `<div class="p-4 rounded-xl view-once-btn text-brand-gold text-[11px] text-center font-bold flex flex-col items-center"><i data-lucide="bomb" class="w-5 h-5 mb-1 text-amber-500"></i> أرسلت وسائط ستُعرض لمرة واحدة</div>`; }
-                                else { mediaHtml = `<button onclick="openViewOnce('${msgId}', '${msg.mediaUrl}', '${msg.mediaType}')" class="w-full p-4 rounded-xl view-once-btn text-brand-gold font-bold flex flex-col items-center gap-2 hover:bg-brand-gold/10 transition-colors shadow-inner"><i data-lucide="eye" class="w-6 h-6 text-amber-500"></i> انقر لفتح الوسائط (سيتم تدميرها فوراً)</button>`; }
+                                else { mediaHtml = `<button onclick="openViewOnce('${msgId}', '${msg.mediaUrl}', '${msg.mediaType}')" class="w-full p-4 rounded-xl view-once-btn text-brand-gold font-bold flex flex-col items-center gap-2 hover:bg-brand-gold/10 transition-colors shadow-inner"><i data-lucide="eye" class="w-6 h-6 text-amber-500"></i> انقر لفتح الوسائط (تُدمر فوراً)</button>`; }
                             } else {
-                                if (msg.mediaType === 'video') { mediaHtml = `<div class="relative"><video src="${msg.mediaUrl}" class="mt-2 w-full max-w-xs rounded-xl shadow-md bg-black cursor-pointer" onclick="openNormalMedia('${msg.mediaUrl}', 'video')"></video><div class="absolute inset-0 flex items-center justify-center pointer-events-none"><div class="bg-black/50 p-3 rounded-full backdrop-blur-md"><i data-lucide="play" class="w-6 h-6 text-white fill-current"></i></div></div></div>`; } 
-                                else if (msg.mediaType === 'audio') { 
-                                    // تطبيق Wavesurfer للصوتيات
-                                    mediaHtml = `<div class="mt-2 w-full max-w-[250px] bg-brand-darker/60 backdrop-blur-md border border-brand-gold/20 p-2.5 rounded-xl flex items-center gap-3 shadow-inner"><button onclick="playWave('${msgId}')" class="p-2.5 bg-gradient-to-tr from-amber-600 to-brand-gold text-white rounded-full shadow-md hover:scale-105 transition-transform"><i data-lucide="play" class="w-4 h-4 fill-current"></i></button><div id="wave-${msgId}" class="flex-1 h-8"></div></div>`; 
-                                    setTimeout(() => {
-                                        if(!activeWavesurfers[msgId]) {
-                                            activeWavesurfers[msgId] = WaveSurfer.create({ container: `#wave-${msgId}`, waveColor: 'rgba(217, 119, 6, 0.4)', progressColor: '#d97706', height: 32, barWidth: 2, barGap: 1, barRadius: 2, url: msg.mediaUrl });
-                                        }
-                                    }, 100);
-                                } 
-                                else { mediaHtml = `<img src="${msg.mediaUrl}" onclick="openNormalMedia('${msg.mediaUrl}', 'image')" class="mt-2 w-full max-w-xs rounded-xl border border-brand-text/10 shadow-md cursor-zoom-in" loading="lazy">`; }
+                                if (msg.mediaType === 'video') { mediaHtml = `<div class="relative"><video src="${msg.mediaUrl}" class="mt-2 w-full max-w-xs rounded-xl shadow-md bg-black cursor-pointer" onclick="openNormalMedia('${msg.mediaUrl}', 'video')"></video></div>`; } 
+                                else if (msg.mediaType === 'audio') { mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-[220px] max-w-full h-10 custom-audio rounded-full bg-brand-dark/50"></audio>`; } 
+                                else { mediaHtml = `<img src="${msg.mediaUrl}" onclick="openNormalMedia('${msg.mediaUrl}', 'image')" class="mt-2 w-full max-w-xs rounded-xl shadow-md cursor-zoom-in">`; }
                             }
                         }
 
-                        // علامة القراءة (Checkmarks)
+                        let replyHtml = '';
+                        if (msg.replyTo) {
+                            replyHtml = `<div class="mb-2 p-2 bg-brand-darker/30 border-r-4 border-brand-emerald rounded-lg cursor-pointer hover:bg-brand-darker/50 transition-colors"><span class="font-bold text-brand-emerald text-[11px]">${msg.replyTo.senderName}</span><p class="truncate text-brand-muted text-xs">${msg.replyTo.text}</p></div>`;
+                        }
+
+                        let reactionsHtml = '';
+                        if (msg.reactions) {
+                            reactionsHtml = `<div class="absolute -bottom-3 ${isMe ? 'left-2' : 'right-2'} flex bg-brand-surface border border-brand-text/10 rounded-full px-1 shadow-sm z-10 text-xs">`;
+                            Object.values(msg.reactions).forEach(emoji => reactionsHtml += `<span>${emoji}</span>`);
+                            reactionsHtml += `</div>`;
+                        }
+
                         const statusIcon = isMe ? (msg.status === 'read' ? '<i data-lucide="check-check" class="w-3.5 h-3.5 inline text-blue-400"></i>' : '<i data-lucide="check" class="w-3.5 h-3.5 inline text-gray-400"></i>') : '';
+                        const editedTag = msg.isEdited ? '<span class="text-[9px] text-brand-muted ml-1">(معدلة)</span>' : '';
 
                         const div = document.createElement('div');
                         div.id = `msg-${msgId}`;
-                        div.setAttribute('data-text', decryptedText.toLowerCase());
-                        
-                        div.className = `msg-bubble p-3.5 px-4 max-w-[85%] md:max-w-md relative w-fit group flex flex-col ${radiusClass} ${marginClass} ${isMe ? 'self-end bg-gradient-to-tr from-brand-surface to-brand-dark/30 border border-brand-gold/30 text-brand-text shadow-sm' : 'self-start bg-brand-surface/20 backdrop-blur-sm border border-brand-text/5 text-brand-text'}`;
+                        div.className = `msg-bubble p-3.5 px-4 max-w-[85%] md:max-w-md relative w-fit group flex flex-col ${isMe ? 'rounded-2xl rounded-tr-sm self-end bg-gradient-to-tr from-brand-surface to-brand-dark/30 border border-brand-gold/30 mt-2' : 'rounded-2xl rounded-tl-sm self-start bg-brand-surface/20 border border-brand-text/5 mt-2'}`;
                         
                         div.innerHTML = `
-                            ${!isMe && !isGrouped ? `<div class="text-[11px] text-brand-gold font-black mb-1">${senderName}</div>` : ''}
-                            <div class="leading-relaxed break-words text-[14px] media-content">
-                                ${mediaHtml}
-                                ${decryptedText ? `<div class="${msg.mediaUrl ? 'mt-1.5' : ''}">${formatMarkdown(decryptedText)}</div>` : ''}
-                                <div class="flex items-center justify-end mt-2 opacity-70 text-[10px] gap-1">
-                                    <span class="font-sans" dir="ltr">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</span>
-                                    ${statusIcon}
-                                </div>
-                            </div>
+                            ${!isMe ? `<div class="text-[11px] text-brand-gold font-black mb-1">${senderName}</div>` : ''}
+                            ${replyHtml}
+                            <div class="leading-relaxed break-words text-[14px] media-content">${mediaHtml}${decryptedText ? `<div class="${msg.mediaUrl ? 'mt-1.5' : ''}">${formatMarkdown(decryptedText)}</div>` : ''}</div>
+                            <div class="flex items-center justify-end mt-1.5 opacity-70 text-[10px] gap-1">${editedTag}<span dir="ltr">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>${statusIcon}</div>
+                            ${reactionsHtml}
                         `;
+                        
+                        // ربط حدث الضغط المطول بالرسالة
+                        attachContextMenuEvents(div, msgId, decryptedText, isMe, senderName);
                         area.appendChild(div);
                     });
 
-                    if (!hasMessages) {
-                        area.innerHTML = `
-                            <div class="flex-1 flex flex-col items-center justify-center opacity-40 my-auto">
-                                <div class="w-20 h-20 bg-brand-surface rounded-full flex items-center justify-center mb-3 border border-brand-text/5"><i data-lucide="shield" class="w-8 h-8 text-brand-gold"></i></div>
-                                <p class="text-brand-text text-sm font-medium">المحادثة مشفرة تماماً E2EE. أرسل رسالة للبدء.</p>
-                            </div>`;
-                    } else if (area.scrollHeight - area.scrollTop - area.clientHeight < 300) { area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }); }
-                    
+                    if (!hasMessages) area.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center opacity-40 my-auto"><div class="w-20 h-20 bg-brand-surface rounded-full flex items-center justify-center mb-3"><i data-lucide="shield" class="w-8 h-8 text-brand-gold"></i></div><p class="text-sm font-medium">محادثة مشفرة.</p></div>`;
+                    else area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
                     lucide.createIcons();
-                    if(Object.keys(updatesToRead).length > 0) update(ref(db, `chats/${currentChatId}/messages`), updatesToRead);
                 });
             });
         }
+
+        window.openViewOnce = function(msgId, url, type) { /* Code Unchanged */ const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img'); const vid = document.getElementById('lightbox-vid'); if(type === 'video') { img.classList.add('hidden'); vid.src = url; vid.classList.remove('hidden'); } else { vid.classList.add('hidden'); img.src = url; img.classList.remove('hidden'); } modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10); setTimeout(() => { remove(ref(db, `chats/${currentChatId}/messages/${msgId}`)); }, 2000); };
+        window.openNormalMedia = function(url, type) { /* Code Unchanged */ const modal = document.getElementById('lightbox-modal'); const img = document.getElementById('lightbox-img'); const vid = document.getElementById('lightbox-vid'); if(type === 'video') { img.classList.add('hidden'); vid.src = url; vid.classList.remove('hidden'); } else { vid.classList.add('hidden'); img.src = url; img.classList.remove('hidden'); } modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10); };
+        window.closeLightbox = function() { const modal = document.getElementById('lightbox-modal'); modal.classList.add('opacity-0'); setTimeout(() => { modal.classList.add('hidden'); document.getElementById('lightbox-vid').pause(); }, 300); };
     </script>
 </body>
 </html>
