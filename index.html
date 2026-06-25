@@ -188,13 +188,6 @@
                             <label class="absolute -top-2 right-4 bg-brand-dark px-2 text-[10px] text-brand-gold font-bold z-10 rounded-md">الحالة المكتوبة</label>
                             <textarea id="profile-bio" class="w-full bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 text-brand-text outline-none focus:border-brand-gold h-24 resize-none transition-colors relative z-0 font-medium"></textarea>
                         </div>
-
-                        <div class="bg-brand-surface/20 p-4 rounded-xl border border-brand-text/5 flex flex-col gap-3">
-                            <span class="text-xs font-bold text-brand-gold">أدوات النظام</span>
-                            <button onclick="alert('جاري تصدير المحادثة...')" class="w-full flex items-center justify-between p-3 bg-brand-darker/40 hover:bg-brand-darker rounded-xl transition-colors text-sm font-medium">
-                                <span class="flex items-center gap-2"><i data-lucide="download" class="w-4 h-4 text-brand-gold"></i> تصدير السجل</span>
-                            </button>
-                        </div>
                         
                         <div class="flex items-center justify-between p-4 bg-brand-surface/20 rounded-xl border border-brand-text/5">
                             <div class="flex items-center gap-3">
@@ -264,10 +257,6 @@
                 </div>
                 <div class="flex flex-col"><h2 id="chat-title" class="text-base md:text-lg font-black text-brand-text">الدردشة</h2><span id="chat-typing-status" class="text-[11px] font-bold text-brand-gold h-3.5 mt-0.5"></span></div>
             </div>
-            <div class="flex items-center gap-2 pt-safe">
-                <button onclick="startCall('audio')" class="p-2.5 text-brand-emerald hover:bg-brand-surface/60 rounded-xl transition-colors" title="مكالمة صوتية"><i data-lucide="phone" class="w-5 h-5"></i></button>
-                <button onclick="startCall('video')" class="p-2.5 text-blue-400 hover:bg-brand-surface/60 rounded-xl transition-colors" title="مكالمة فيديو"><i data-lucide="video" class="w-5 h-5"></i></button>
-            </div>
         </header>
 
         <div id="chat-search-bar" class="hidden bg-brand-surface/90 backdrop-blur-md border-b border-brand-gold/20 p-3 px-4 items-center gap-3 z-10 shadow-lg">
@@ -308,17 +297,6 @@
                 <button id="mic-btn" class="flex items-center gap-1.5 text-xs text-brand-muted hover:text-red-400 group"><i data-lucide="mic" class="w-3.5 h-3.5 group-hover:scale-105"></i><span class="font-bold text-[11px]">مذكرة صوتية</span></button>
             </div>
         </footer>
-    </div>
-
-    <div id="call-screen" class="hidden fixed inset-0 z-[200] bg-brand-darker/95 backdrop-blur-3xl flex flex-col items-center justify-between py-20 opacity-0 transition-opacity duration-300">
-        <div class="flex flex-col items-center gap-4 mt-10">
-            <div class="w-32 h-32 bg-brand-surface rounded-full flex items-center justify-center border-4 border-brand-gold shadow-[0_0_40px_rgba(217,119,6,0.3)] animate-pulse-slow overflow-hidden" id="call-avatar"></div>
-            <h2 id="call-name" class="text-3xl font-black text-brand-text mt-4">الاسم</h2>
-            <p id="call-status" class="text-brand-gold font-medium text-sm">جاري إنشاء اتصال آمن (E2EE)...</p>
-        </div>
-        <div class="flex gap-6 mb-10">
-            <button onclick="endCall()" class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-110 transition-transform"><i data-lucide="phone-off" class="w-8 h-8"></i></button>
-        </div>
     </div>
 
     <div id="lightbox-modal" class="hidden fixed inset-0 z-[200] bg-black/95 flex items-center justify-center backdrop-blur-lg opacity-0 transition-opacity duration-300">
@@ -731,7 +709,7 @@
         /* حماية XSS تم تطبيقها بدقة */
         function formatMarkdown(text) {
             if(!text) return '';
-            let html = text.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+            let html = text.replace(/</g, "<").replace(/>/g, ">"); 
             html = html.replace(/\*(.*?)\*/g, '<span class="format-bold">$1</span>').replace(/_(.*?)_/g, '<span class="format-italic">$1</span>'); 
             const urlRegex = /(https?:\/\/[^\s]+)/g; html = html.replace(urlRegex, '<a href="$1" target="_blank" class="text-brand-gold hover:text-amber-500 underline font-medium block truncate" dir="ltr">$1</a>'); 
             return html.replace(/\n/g, '<br>');
@@ -965,15 +943,6 @@
                 });
             });
         }
-
-        /* --- مكالمات الصوت والفيديو (WebRTC UI Placeholder) --- */
-        window.startCall = function(type) {
-            const modal = document.getElementById('call-screen');
-            document.getElementById('call-name').innerText = document.getElementById('chat-title').innerText;
-            document.getElementById('call-status').innerText = type === 'video' ? "جاري إنشاء اتصال فيديو مشفر (E2EE)..." : "جاري إنشاء اتصال صوتي مشفر (E2EE)...";
-            modal.classList.remove('hidden'); setTimeout(()=>modal.classList.remove('opacity-0'), 10);
-        };
-        window.endCall = function() { const modal = document.getElementById('call-screen'); modal.classList.add('opacity-0'); setTimeout(()=>modal.classList.add('hidden'), 300); };
     </script>
 </body>
 </html>
